@@ -1,5 +1,7 @@
 package com.chatokjunior.secureteamapi.config;
 
+import com.chatokjunior.secureteamapi.security.jwt.JwtAuthenticationFilter;
+import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +19,17 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtService jwtService,
+            UserDetailsService userDetailsService
+    ) {
+        return new JwtAuthenticationFilter(
+                jwtService,
+                userDetailsService
+        );
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,6 +55,8 @@ public class SecurityConfig {
     ) throws Exception{
         return configuration.getAuthenticationManager();
     }
+
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

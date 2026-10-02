@@ -5,6 +5,7 @@ import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserResponse;
 import com.chatokjunior.secureteamapi.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,9 @@ public class AuthController {
     public ResponseEntity<LoginUserResponse> loginUser(
             @RequestBody
             @Valid
-            LoginUserRequest req
+            LoginUserRequest request,
+            HttpServletResponse response
     ) {
-        return ResponseEntity.ok(userService.loginUser(req));
+        return ResponseEntity.ok(userService.loginUser(request, response));
     }
 }

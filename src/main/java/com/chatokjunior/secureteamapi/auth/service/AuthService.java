@@ -8,6 +8,8 @@ import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -53,16 +55,31 @@ public class AuthService {
                 .build();
     }
 
-    public LoginUserResponse loginUser(LoginUserRequest req) {
+    public LoginUserResponse loginUser(
+            LoginUserRequest request,
+            HttpServletResponse response
+    ) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        req.getEmail(),
-                        req.getPassword()
+                        request.getEmail(),
+                        request.getPassword()
                 )
         );
 
         String username = authentication.getName();
         String token = jwtService.generateAccessToken(username);
+
+        Cookie accessTokenCookie = new Cookie(
+                "accessToken",
+                token
+        );
+
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(15 * 60);
+
+        response.addCookie(accessTokenCookie);
 
         return LoginUserResponse.builder()
                 .build();

@@ -84,4 +84,18 @@ public class AuthService {
         return LoginUserResponse.builder()
                 .build();
     }
+
+    public void logout(HttpServletResponse response) {
+        Cookie accessTokenCookie = new Cookie(
+                "accessToken",
+                ""
+        );
+
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(15 * 60);
+
+        response.addCookie(accessTokenCookie);
+    }
 }

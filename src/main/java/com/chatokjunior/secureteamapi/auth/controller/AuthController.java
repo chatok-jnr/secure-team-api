@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService userService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponse> createNewUser(
             @RequestBody
             CreateUserRequest req
     ) {
-        return ResponseEntity.ok(userService.createUser(req));
+        return ResponseEntity.ok(authService.createUser(req));
     }
 
     @PostMapping("/login")
@@ -33,6 +33,12 @@ public class AuthController {
             LoginUserRequest request,
             HttpServletResponse response
     ) {
-        return ResponseEntity.ok(userService.loginUser(request, response));
+        return ResponseEntity.ok(authService.loginUser(request, response));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -3,7 +3,6 @@ package com.chatokjunior.secureteamapi.auth.controller;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
-import com.chatokjunior.secureteamapi.auth.dto.LoginUserResponse;
 import com.chatokjunior.secureteamapi.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -27,13 +26,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginUserResponse> loginUser(
+    public ResponseEntity<String> loginUser(
             @RequestBody
             @Valid
             LoginUserRequest request,
             HttpServletResponse response
     ) {
-        return ResponseEntity.ok(authService.loginUser(request, response));
+        authService.login(request, response);
+        return ResponseEntity.ok("Login Successful");
     }
 
     @PostMapping("/logout")

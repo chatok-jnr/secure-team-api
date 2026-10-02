@@ -3,7 +3,6 @@ package com.chatokjunior.secureteamapi.auth.service;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
-import com.chatokjunior.secureteamapi.auth.dto.LoginUserResponse;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
@@ -55,7 +54,7 @@ public class AuthService {
                 .build();
     }
 
-    public LoginUserResponse loginUser(
+    public void login(
             LoginUserRequest request,
             HttpServletResponse response
     ) {
@@ -80,9 +79,6 @@ public class AuthService {
         accessTokenCookie.setMaxAge(15 * 60);
 
         response.addCookie(accessTokenCookie);
-
-        return LoginUserResponse.builder()
-                .build();
     }
 
     public void logout(HttpServletResponse response) {

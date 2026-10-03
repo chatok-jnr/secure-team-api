@@ -1,5 +1,6 @@
 package com.chatokjunior.secureteamapi.refresh;
 
+import com.chatokjunior.secureteamapi.exception.InvalidRefreshTokenException;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,27 @@ public class RefreshTokenService {
         return rawToken;
     }
 
+    @Transactional
+    public RefreshToken validateRefreshToken(String rawToken) {
+        String tokenHash = hashToken(rawToken);
 
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
+
+        if(refreshToken.isRevoked()) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has been revoked"
+            );
+        }
+
+        if(refreshToken.getExpiresAt().isBefore(Instant.now())) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has expired"
+            );
+        }
+
+        return refreshToken;
+    }
 
     // Helper Functions -------------------------------------------
 

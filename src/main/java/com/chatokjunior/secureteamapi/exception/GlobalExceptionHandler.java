@@ -38,4 +38,14 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+
+    // Refreh token
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ProblemDetail handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problem.setTitle("Invalid Refresh Token");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
 }

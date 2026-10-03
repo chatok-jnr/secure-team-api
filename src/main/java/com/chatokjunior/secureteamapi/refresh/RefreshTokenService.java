@@ -1,11 +1,64 @@
 package com.chatokjunior.secureteamapi.refresh;
 
+import com.chatokjunior.secureteamapi.user.entity.User;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.sql.Ref;
+import java.time.Instant;
+
+@Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
-    public String generateToken() {
+
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenExpiration;
+
+    private final SecureRandom secureRandom = new SecureRandom();
+
+    @Transactional
+    public String createRefreshToken(User user) {
+        String rawToken = generateRawToken();
+        String tokenHash = hashToken(rawToken);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .tokenHash(tokenHash)
+                .user(user)
+                .expiresAt(
+                        Instant.now().plusMillis(refreshTokenExpiration)
+                )
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+        return rawToken;
+    }
+
+
+
+    // Helper Functions -------------------------------------------
+
+    private String generateRawToken() {
         return "";
     }
 
-    public boolean isValid(String token) {
-        return true;
+    private String hashToken(String rawToken) {
+        try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            byte[] hash = digest.digest(
+                    rawToken.getBytes(StandardCharsets.UTF_8)
+            );
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("SHA-256 Algorithm is not available", ex);
+        }
+        return  "";
     }
 }

@@ -20,7 +20,7 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "tokenHashtatu", nullable = false, unique = true)
+    @Column(name = "tokenHash", nullable = false, unique = true)
     private String tokenHash;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -8,6 +8,7 @@ import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -66,11 +69,32 @@ public class AuthService {
         );
 
         String username = authentication.getName();
-        String token = jwtService.generateAccessToken(username);
+        addAccessToken(response, username);
+    }
 
+    public void refresh(HttpServletRequest request, HttpServletResponse response) {
+
+        Cookie[] cookies = request.getCookies();
+        String refreshToken = null;
+
+        for(Cookie cookie: cookies) {
+            if(cookie.getName().equals("refreshToken")) {
+                refreshToken = new String(cookie.getValue());
+            }
+        }
+
+        if(refreshToken == null) {
+            System.out.println("its null");
+        }
+
+        String username =  "will be update soon";
+        addAccessToken(response, username);
+    }
+
+    public void logout(HttpServletResponse response) {
         Cookie accessTokenCookie = new Cookie(
                 "accessToken",
-                token
+                ""
         );
 
         accessTokenCookie.setHttpOnly(true);
@@ -81,10 +105,13 @@ public class AuthService {
         response.addCookie(accessTokenCookie);
     }
 
-    public void logout(HttpServletResponse response) {
+    // Helper Functions
+    private void addAccessToken(HttpServletResponse response, String username) {
+        String token = jwtService.generateAccessToken(username);
+
         Cookie accessTokenCookie = new Cookie(
                 "accessToken",
-                ""
+                token
         );
 
         accessTokenCookie.setHttpOnly(true);

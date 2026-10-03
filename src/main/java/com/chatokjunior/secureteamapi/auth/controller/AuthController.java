@@ -4,6 +4,7 @@ import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
 import com.chatokjunior.secureteamapi.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,12 @@ public class AuthController {
     ) {
         authService.login(request, response);
         return ResponseEntity.ok("Login Successful");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
+        authService.refresh(request, response);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/logout")

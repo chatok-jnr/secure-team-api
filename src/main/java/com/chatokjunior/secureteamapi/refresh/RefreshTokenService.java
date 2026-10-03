@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.Ref;
 import java.time.Instant;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +73,13 @@ public class RefreshTokenService {
     // Helper Functions -------------------------------------------
 
     private String generateRawToken() {
-        return "";
+        byte[] randomBytes = new byte[32];
+
+        secureRandom.nextBytes(randomBytes);
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(randomBytes);
     }
 
     private String hashToken(String rawToken) {
@@ -83,9 +89,12 @@ public class RefreshTokenService {
             byte[] hash = digest.digest(
                     rawToken.getBytes(StandardCharsets.UTF_8)
             );
+
+            return Base64.getEncoder()
+                    .encodeToString(hash);
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 Algorithm is not available", ex);
         }
-        return  "";
+
     }
 }

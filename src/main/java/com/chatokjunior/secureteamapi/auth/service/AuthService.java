@@ -4,6 +4,9 @@ import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
+import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.refresh.RefreshToken;
+import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -30,6 +33,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -75,24 +79,21 @@ public class AuthService {
         addRefreshToken(response, username);
     }
 
-//    public void refresh(HttpServletRequest request, HttpServletResponse response) {
-//
-//        Cookie[] cookies = request.getCookies();
-//        String refreshToken = null;
-//
-//        for(Cookie cookie: cookies) {
-//            if(cookie.getName().equals("refreshToken")) {
-//                refreshToken = new String(cookie.getValue());
-//            }
-//        }
-//
-//        if(refreshToken == null) {
-//            System.out.println("its null");
-//        }
-//
-//        String username =  "will be update soon";
-//        addAccessToken(response, username);
-//    }
+    public void refresh(HttpServletRequest request, HttpServletResponse response) {
+
+        Cookie[] cookies = request.getCookies();
+        String rawToken = null;
+
+        for(Cookie cookie: cookies) {
+            if(cookie.getName().equals("refreshToken")) {
+                rawToken = new String(cookie.getValue());
+            }
+        }
+
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(rawToken);
+
+        addAccessToken(response, refreshToken.getUser().getEmail());
+    }
 
     public void logout(HttpServletResponse response) {
 
@@ -123,7 +124,7 @@ public class AuthService {
     // =========================
 
     private void addAccessToken(HttpServletResponse response, String username) {
-        String token = jwtService.generateToken(username, "accessToken");
+        String token = jwtService.generateToken(username);
 
         Cookie accessTokenCookie = new Cookie(
                 "accessToken",
@@ -139,11 +140,15 @@ public class AuthService {
     }
 
     private void addRefreshToken(HttpServletResponse response, String username) {
-        String token = jwtService.generateToken(username, "refreshToken");
+
+        User user = userRepository.findByEmail(username)
+                        .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+       String refreshToken = refreshTokenService.createRefreshToken(user);
 
         Cookie refreshTokenCookie = new Cookie(
                 "refreshToken",
-                token
+                refreshToken
         );
 
         refreshTokenCookie.setHttpOnly(true);

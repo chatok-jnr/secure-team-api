@@ -32,12 +32,9 @@ public class JwtService {
     }
 
 
-    public String generateToken(String subject, String tokenType) {
+    public String generateToken(String subject) {
         Date now = new Date();
-        Date expiration;
-
-        if(tokenType.equals("accessToken")) expiration = new Date(now.getTime() + accessTokenExpiration);
-        else expiration = new Date(now.getTime() + refreshTokenExpiration);
+        Date expiration = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .subject(subject)

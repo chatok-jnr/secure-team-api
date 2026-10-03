@@ -18,7 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,44 +72,58 @@ public class AuthService {
 
         String username = authentication.getName();
         addAccessToken(response, username);
+        addRefreshToken(response, username);
     }
 
-    public void refresh(HttpServletRequest request, HttpServletResponse response) {
-
-        Cookie[] cookies = request.getCookies();
-        String refreshToken = null;
-
-        for(Cookie cookie: cookies) {
-            if(cookie.getName().equals("refreshToken")) {
-                refreshToken = new String(cookie.getValue());
-            }
-        }
-
-        if(refreshToken == null) {
-            System.out.println("its null");
-        }
-
-        String username =  "will be update soon";
-        addAccessToken(response, username);
-    }
+//    public void refresh(HttpServletRequest request, HttpServletResponse response) {
+//
+//        Cookie[] cookies = request.getCookies();
+//        String refreshToken = null;
+//
+//        for(Cookie cookie: cookies) {
+//            if(cookie.getName().equals("refreshToken")) {
+//                refreshToken = new String(cookie.getValue());
+//            }
+//        }
+//
+//        if(refreshToken == null) {
+//            System.out.println("its null");
+//        }
+//
+//        String username =  "will be update soon";
+//        addAccessToken(response, username);
+//    }
 
     public void logout(HttpServletResponse response) {
-        Cookie accessTokenCookie = new Cookie(
-                "accessToken",
-                ""
-        );
 
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(15 * 60);
+        List<String> cookieType = List.of("accessToken", "refreshToken");
 
-        response.addCookie(accessTokenCookie);
+        // Remove access token
+        List<Cookie> cookies = new ArrayList<>();
+        for(int i = 0; i < 2; i++) {
+
+            cookies.add(
+              new Cookie(
+                      cookieType.get(i),
+                      ""
+              )
+            );
+
+            cookies.get(i).setHttpOnly(true);
+            cookies.get(i).setSecure(true);
+            cookies.get(i).setPath("/");
+            cookies.get(i).setMaxAge(0);
+
+            response.addCookie(cookies.get(i));
+        }
     }
 
+    // =========================
     // Helper Functions
+    // =========================
+
     private void addAccessToken(HttpServletResponse response, String username) {
-        String token = jwtService.generateAccessToken(username);
+        String token = jwtService.generateToken(username, "accessToken");
 
         Cookie accessTokenCookie = new Cookie(
                 "accessToken",
@@ -120,5 +136,21 @@ public class AuthService {
         accessTokenCookie.setMaxAge(15 * 60);
 
         response.addCookie(accessTokenCookie);
+    }
+
+    private void addRefreshToken(HttpServletResponse response, String username) {
+        String token = jwtService.generateToken(username, "refreshToken");
+
+        Cookie refreshTokenCookie = new Cookie(
+                "refreshToken",
+                token
+        );
+
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
+
+        response.addCookie(refreshTokenCookie);
     }
 }

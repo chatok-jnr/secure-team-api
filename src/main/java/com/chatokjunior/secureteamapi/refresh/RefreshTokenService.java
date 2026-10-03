@@ -64,6 +64,12 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    @Transactional
+    public void revokedRefreshToken(RefreshToken refreshToken) {
+        refreshToken.setRevoked(true);
+        refreshTokenRepository.save(refreshToken);
+    }
+
     // Helper Functions -------------------------------------------
 
     private String generateRawToken() {

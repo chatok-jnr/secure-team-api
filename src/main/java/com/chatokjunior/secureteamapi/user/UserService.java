@@ -1,20 +1,26 @@
 package com.chatokjunior.secureteamapi.user;
 
+import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.refresh.RefreshToken;
+import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
 import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.http.HttpRequest;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,6 +30,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthSessionService authSessionService;
 
     public MyProfileResponse myProfile(Authentication authentication) {
         String email = authentication.getName();
@@ -41,7 +49,11 @@ public class UserService {
         return myProfile;
     }
 
-    public String changePassword(ChangePasswordRequest request) {
+    @Transactional
+    public String changePassword(
+            HttpServletResponse httpResponse,
+            ChangePasswordRequest request
+    ) {
         String currentPassword = request.getCurrentPassword();
         String newPassword = request.getNewPassword();
 
@@ -61,6 +73,21 @@ public class UserService {
         user.setPassword(hashedPassword);
 
         userRepository.save(user);
+
+
+        List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByUser(user);
+
+        if(!refreshTokens.isEmpty()) {
+            for(RefreshToken refreshToken: refreshTokens) {
+                if(!refreshToken.isRevoked()) {
+                    refreshToken.setRevoked(true);
+                    refreshTokenRepository.save(refreshToken);
+                }
+            }
+        }
+
+        authSessionService.addAccessToken(httpResponse, user.getEmail());
+        authSessionService.addRefreshToken(httpResponse, user.getEmail());
 
         return "Password updated successfully";
     }

@@ -35,9 +35,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthSessionService authSessionService;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -79,8 +78,8 @@ public class AuthService {
         );
 
         String username = authentication.getName();
-        addAccessToken(response, username);
-        addRefreshToken(response, username);
+        authSessionService.addAccessToken(response, username);
+        authSessionService.addRefreshToken(response, username);
     }
 
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -110,7 +109,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.validateRefreshToken(rawToken);
         refreshTokenService.revokeRefreshToken(rawToken);
 
-        addAccessToken(response, refreshToken.getUser().getEmail());
+        authSessionService.addAccessToken(response, refreshToken.getUser().getEmail());
     }
 
     public void logout(
@@ -156,45 +155,5 @@ public class AuthService {
 
         response.addCookie(refreshTokenCookie);
 
-    }
-
-    // =========================
-    // Helper Functions
-    // =========================
-
-    private void addAccessToken(HttpServletResponse response, String username) {
-        String token = jwtService.generateToken(username);
-
-        Cookie accessTokenCookie = new Cookie(
-                "accessToken",
-                token
-        );
-
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(15 * 60);
-
-        response.addCookie(accessTokenCookie);
-    }
-
-    private void addRefreshToken(HttpServletResponse response, String username) {
-
-        User user = userRepository.findByEmail(username)
-                        .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-       String refreshToken = refreshTokenService.createRefreshToken(user);
-
-        Cookie refreshTokenCookie = new Cookie(
-                "refreshToken",
-                refreshToken
-        );
-
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
-
-        response.addCookie(refreshTokenCookie);
     }
 }

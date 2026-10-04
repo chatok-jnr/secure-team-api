@@ -13,22 +13,18 @@ import java.util.Date;
 public class JwtService {
     private final SecretKey secretKey;
     private final long accessTokenExpiration;
-    private final long refreshTokenExpiration;
 
     public JwtService(
             @Value("${jwt.secret}")
             String secret,
             @Value("${jwt.access-token-expiration}")
-            long accessTokenExpiration,
-            @Value("604800000")
-            long refreshTokenExpiration
+            long accessTokenExpiration
     ) {
         this.secretKey = Keys.hmacShaKeyFor(
                 java.util.Base64.getDecoder().decode(secret)
         );
 
         this.accessTokenExpiration = accessTokenExpiration;
-        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
 

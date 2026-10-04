@@ -3,9 +3,11 @@ package com.chatokjunior.secureteamapi.auth.service;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
+import com.chatokjunior.secureteamapi.exception.InvalidRefreshTokenException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
+import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
@@ -21,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +37,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -82,41 +86,76 @@ public class AuthService {
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
 
         Cookie[] cookies = request.getCookies();
+
+        if(cookies == null) {
+            throw new NullPointerException(
+                    "Refresh token is missing"
+            );
+        }
+
         String rawToken = null;
 
         for(Cookie cookie: cookies) {
             if(cookie.getName().equals("refreshToken")) {
-                rawToken = new String(cookie.getValue());
+                rawToken = cookie.getValue();
             }
         }
 
+        if (rawToken == null || rawToken.isBlank()) {
+            throw new InvalidRefreshTokenException(
+                    "Refresh token is missing, Please login again"
+            );
+        }
+
         RefreshToken refreshToken = refreshTokenService.validateRefreshToken(rawToken);
+        refreshTokenService.revokeRefreshToken(rawToken);
 
         addAccessToken(response, refreshToken.getUser().getEmail());
     }
 
-    public void logout(HttpServletResponse response) {
+    public void logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
 
-        List<String> cookieType = List.of("accessToken", "refreshToken");
+        Cookie[] requestCookie = request.getCookies();
 
-        // Remove access token
-        List<Cookie> cookies = new ArrayList<>();
-        for(int i = 0; i < 2; i++) {
+        if(requestCookie != null) {
+            String refreshToken = null;
 
-            cookies.add(
-              new Cookie(
-                      cookieType.get(i),
-                      ""
-              )
-            );
+            for(Cookie cookie: requestCookie) {
+                if(cookie.getName().equals("refreshToken")) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
 
-            cookies.get(i).setHttpOnly(true);
-            cookies.get(i).setSecure(true);
-            cookies.get(i).setPath("/");
-            cookies.get(i).setMaxAge(0);
-
-            response.addCookie(cookies.get(i));
+            if(refreshToken != null && !refreshToken.isBlank()) {
+                refreshTokenService.revokeRefreshToken(refreshToken);
+            }
         }
+
+
+
+        Cookie accessTokenCookie = new Cookie("accessToken", "");
+
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0);
+
+        response.addCookie(accessTokenCookie);
+
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", "");
+
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+
+        response.addCookie(refreshTokenCookie);
+
     }
 
     // =========================

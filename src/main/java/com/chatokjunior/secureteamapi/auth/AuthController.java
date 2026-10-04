@@ -1,4 +1,4 @@
-package com.chatokjunior.secureteamapi.auth.controller;
+package com.chatokjunior.secureteamapi.auth;
 
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;

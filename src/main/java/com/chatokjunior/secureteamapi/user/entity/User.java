@@ -14,9 +14,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity 
 @Table (name="users")
@@ -48,4 +51,24 @@ public class User {
     @ColumnDefault ("true")
     @Builder.Default
     private boolean enabled = true;
+
+    @Column(name = "account_non_locked")
+    @ColumnDefault("true")
+    @Builder.Default
+    private boolean accountNonLocked = true;
+
+    @Column(name = "failed_login_attempts")
+    @ColumnDefault("0")
+    @Builder.Default
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "created_at")
+    @CreationTimestamp
+    @Builder.Default
+    private Instant createdAt = Instant.now();
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    @Builder.Default
+    private Instant updatedAt = Instant.now();
 }

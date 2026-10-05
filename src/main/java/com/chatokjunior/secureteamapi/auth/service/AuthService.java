@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -68,7 +69,7 @@ public class AuthService {
 
     public void login(
             LoginUserRequest request,
-            HttpServletResponse response
+            HttpServletResponse httpResponse
     ) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -78,8 +79,9 @@ public class AuthService {
         );
 
         String username = authentication.getName();
-        authSessionService.addAccessToken(response, username);
-        authSessionService.addRefreshToken(response, username);
+
+        authSessionService.addAccessToken(httpResponse, username);
+        authSessionService.addRefreshToken(httpResponse, username);
     }
 
     public void refresh(HttpServletRequest request, HttpServletResponse response) {

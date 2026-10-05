@@ -74,7 +74,6 @@ public class UserService {
 
         userRepository.save(user);
 
-
         List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByUser(user);
 
         if(!refreshTokens.isEmpty()) {

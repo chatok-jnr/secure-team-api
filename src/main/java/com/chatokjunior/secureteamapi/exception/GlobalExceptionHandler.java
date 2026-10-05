@@ -2,7 +2,10 @@ package com.chatokjunior.secureteamapi.exception;
 
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -62,6 +65,16 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler (LockedException.class)
+    public ProblemDetail handleLockedException(
+        LockedException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.LOCKED);
+        problem.setTitle("Account is Locked");
+        problem.setDetail(ex.getMessage());
+        return problem;
+    }
+
     @ExceptionHandler(AuthenticationException.class)
     public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
@@ -88,6 +101,29 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problem.setTitle("Incorrect Password");
         problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(AccountLockedException.class)
+    public ProblemDetail handleAccountLockedException(
+            AccountLockedException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problem.setTitle("Account Locked");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentialException(
+            BadCredentialsException ex
+    ) {
+
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problem.setTitle("Authentication Failed");
+        problem.setDetail("Invalid Email or password");
 
         return problem;
     }

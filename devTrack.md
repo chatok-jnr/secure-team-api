@@ -37,8 +37,8 @@ Each feature is built only after everything it depends on already exists, so not
 | 06 | Refresh token rotation (validate A, revoke A, create B, issue new tokens) | ✅ Done |
 | 07 | Logout | ✅ Done |
 | 08 | Get my profile | ✅ Done |
-| 09 | Change my password (revoke existing sessions) | Done |
-| 10 | Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails) | ⬜ To Do |
+| 09 | Change my password (revoke existing sessions) | ✅ Done |
+| 10 | Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails) | ✅ Done |
 | 11 | Get all users | ⬜ To Do |
 | 12 | Get user by ID | ⬜ To Do |
 | 13 | Create user | ⬜ To Do |

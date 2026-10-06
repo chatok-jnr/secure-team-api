@@ -6,20 +6,24 @@ import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
+import com.chatokjunior.secureteamapi.user.dto.GetAllUserResponse;
 import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Pageable;
 import java.net.http.HttpRequest;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +36,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthSessionService authSessionService;
+
+    public Page<GetAllUsersDto> getUsers(Pageable pageable) {
+
+        Page<GetAllUsersDto> users = userRepository.getAllUser(pageable);
+
+        return users;
+    }
 
     public MyProfileResponse myProfile(Authentication authentication) {
         String email = authentication.getName();

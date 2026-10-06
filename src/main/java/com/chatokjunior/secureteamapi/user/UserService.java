@@ -2,19 +2,18 @@ package com.chatokjunior.secureteamapi.user;
 
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
+import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
-import com.chatokjunior.secureteamapi.user.dto.GetAllUserResponse;
+import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
+import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
-import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
-import java.net.http.HttpRequest;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +35,39 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthSessionService authSessionService;
+
+    @Transactional
+    public CreateUserResponse createNewUser(CreateUserRequest request) {
+
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
+        boolean userExist = userRepository.existsByEmail(request.getEmail());
+
+        if(userExist) {
+            throw new UserAlreadyExistsException("You already have an account with this email");
+        }
+
+        User user = User.builder()
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .password(hashedPassword)
+                .role(request.getRole())
+                .build();
+
+        User newUser = userRepository.save(user);
+
+        CreateUserResponse newUserResponse = CreateUserResponse.builder()
+                .id(newUser.getId())
+                .fullName(newUser.getFullName())
+                .email(newUser.getEmail())
+                .role(newUser.getRole())
+                .enabled(newUser.isEnabled())
+                .accountNonLocked(newUser.isAccountNonLocked())
+                .createdAt(newUser.getCreatedAt())
+                .build();
+
+        return newUserResponse;
+    }
 
     public Page<GetAllUsersDto> getUsers(Pageable pageable) {
 

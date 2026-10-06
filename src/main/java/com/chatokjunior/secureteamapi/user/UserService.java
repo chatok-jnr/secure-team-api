@@ -12,6 +12,7 @@ import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
+import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import java.net.http.HttpRequest;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,13 @@ public class UserService {
         Page<GetAllUsersDto> users = userRepository.getAllUser(pageable);
 
         return users;
+    }
+
+    public GetUserDetailsDto getUserBYId(UUID id) {
+        GetUserDetailsDto user = userRepository.getUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return user;
     }
 
     public MyProfileResponse myProfile(Authentication authentication) {

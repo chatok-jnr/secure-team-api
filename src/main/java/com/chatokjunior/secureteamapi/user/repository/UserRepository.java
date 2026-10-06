@@ -2,6 +2,7 @@ package com.chatokjunior.secureteamapi.user.repository;
 
 import com.chatokjunior.secureteamapi.user.entity.User;
 
+import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import org.springframework.data.domain.Pageable;
 import java.util.*;
 
@@ -23,5 +24,15 @@ public interface UserRepository extends JpaRepository<User, UUID>{
 """,
     countQuery = "select count(u) from User u")
     Page<GetAllUsersDto> getAllUser(Pageable pageable);
+
+    @Query("""
+    select 
+    new com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto(
+        u.id, u.fullName, u.email, u.role, u.enabled, u.accountNonLocked, u.createdAt, u.updatedAt
+    ) 
+    from User u
+    where u.id = :id
+""")
+    Optional<GetUserDetailsDto> getUserById(UUID id);
 }
 

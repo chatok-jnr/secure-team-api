@@ -50,6 +50,15 @@ public class UserController {
         return ResponseEntity.ok("Role Updated Successfully");
     }
 
+    @PatchMapping("/{id}/disable")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> disableUserById(
+            @PathVariable("id")
+            UUID id
+    ) {
+        return ResponseEntity.ok(userService.disableUserById(id));
+    }
+
     @GetMapping("/me")
     public MyProfileResponse myProfile(Authentication authentication){
         return userService.myProfile(authentication);

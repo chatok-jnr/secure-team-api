@@ -39,11 +39,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if(!userDetails.isEnabled()) {
             throw new DisabledException("Account is disabled");
         }
-        
-        System.out.println("\n\nBefore account is locked\n\n");
 
         if(!userDetails.isAccountNonLocked()) {
-            System.out.println("\n\nAccount is lcoked\n\n");
             throw new LockedException("Your account has been locked due to multiple failed login attempts.\n" + //
                                 "Please contact our support team to unlock your account.");
         }

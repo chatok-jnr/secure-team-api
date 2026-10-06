@@ -38,17 +38,10 @@ public class UserService {
     @Transactional
     public CreateUserResponse createNewUser(CreateUserRequest request) {
 
-        System.out.println("\n\nDebug");
-
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
         String username = authentication.getName();
-
-        System.out.println(username);
-        System.out.println(authentication.getAuthorities());
-
-        System.out.println("\n");
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -92,6 +85,22 @@ public class UserService {
         userRepository.save(user);
 
         return null;
+    }
+
+    public String disableUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if(user.isEnabled()) {
+            user.setEnabled(false);
+            userRepository.save(user);
+
+            return "User Has Been Disable Successfully";
+        }
+
+        user.setEnabled(true);
+        userRepository.save(user);
+        return "User Has been Enable Successfully";
     }
 
     public Page<GetAllUsersDto> getUsers(Pageable pageable) {

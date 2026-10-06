@@ -37,13 +37,13 @@ Each feature is built only after everything it depends on already exists, so not
 | 06 | Refresh token rotation (validate A, revoke A, create B, issue new tokens) | ✅ Done |
 | 07 | Logout | ✅ Done |
 | 08 | Get my profile | ✅ Done |
-| 09 | Change my password (revoke existing sessions) | ✅ Done |
+| 09 | Change my password (revoke existing sessions) | done |
 | 10 | Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails) | ✅ Done |
-| 11 | Get all users | ✅ Done |
-| 12 | Get user by ID | ✅ Done |
-| 13 | Create user | ✅ Done |
-| 14 | Change user role | in_progress |
-| 15 | Disable user | ⬜ To Do |
+| 11 | Get all users | done |
+| 12 | Get user by ID | done |
+| 13 | Create user | done |
+| 14 | Change user role | done |
+| 15 | Disable user | done |
 | 16 | Project entity + ProjectRepository | ⬜ To Do |
 | 17 | Create project | ⬜ To Do |
 | 18 | ProjectMember relationship (entity + repository) | ⬜ To Do |

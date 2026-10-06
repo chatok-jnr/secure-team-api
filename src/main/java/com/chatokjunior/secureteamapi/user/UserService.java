@@ -1,15 +1,14 @@
 package com.chatokjunior.secureteamapi.user;
 
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
+import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
-import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
-import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
+import com.chatokjunior.secureteamapi.user.dto.*;
+import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
@@ -39,6 +38,18 @@ public class UserService {
     @Transactional
     public CreateUserResponse createNewUser(CreateUserRequest request) {
 
+        System.out.println("\n\nDebug");
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
+
+        System.out.println(username);
+        System.out.println(authentication.getAuthorities());
+
+        System.out.println("\n");
+
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         boolean userExist = userRepository.existsByEmail(request.getEmail());
@@ -67,6 +78,20 @@ public class UserService {
                 .build();
 
         return newUserResponse;
+    }
+
+    @Transactional
+    public Void updateUserRole(UUID id, RoleUpdateRequest request) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if(user.getRole().equals(request.getRole())) return null;
+
+        user.setRole(request.getRole());
+        userRepository.save(user);
+
+        return null;
     }
 
     public Page<GetAllUsersDto> getUsers(Pageable pageable) {

@@ -1,9 +1,9 @@
 package com.chatokjunior.secureteamapi.exception;
 
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -11,7 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.security.core.AuthenticationException;
+
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,25 +20,21 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private final PropertyResolver propertyResolver;
-
-    public GlobalExceptionHandler(PropertyResolver propertyResolver) {
-        this.propertyResolver = propertyResolver;
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationException(
             MethodArgumentNotValidException ex
     ) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problem.setTitle("Validation failed");
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problem.setTitle("Validation Failed");
 
         Map<String, String> errors = new HashMap<>();
 
-        for(FieldError error: ex.getBindingResult().getFieldErrors()) {
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(
-              error.getField(),
-              error.getDefaultMessage()
+                    error.getField(),
+                    error.getDefaultMessage()
             );
         }
 
@@ -47,38 +44,50 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+    public ProblemDetail handleUserNotFound(
+            UserNotFoundException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
 
         problem.setTitle("User Not Found");
         problem.setDetail(ex.getMessage());
 
-        return  problem;
+        return problem;
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ProblemDetail handleUserAlreadyExist(UserAlreadyExistsException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+    public ProblemDetail handleUserAlreadyExist(
+            UserAlreadyExistsException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
-        problem.setTitle("User Already Exist");
+        problem.setTitle("User Already Exists");
         problem.setDetail(ex.getMessage());
 
         return problem;
     }
 
-    @ExceptionHandler (LockedException.class)
+    @ExceptionHandler(LockedException.class)
     public ProblemDetail handleLockedException(
-        LockedException ex
+            LockedException ex
     ) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.LOCKED);
-        problem.setTitle("Account is Locked");
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.LOCKED);
+
+        problem.setTitle("Account Is Locked");
         problem.setDetail(ex.getMessage());
+
         return problem;
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+    public ProblemDetail handleAuthenticationException(
+            AuthenticationException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
 
         problem.setTitle("Authentication Failed");
         problem.setDetail("Invalid Email or Password");
@@ -86,20 +95,26 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    // Refresh token
     @ExceptionHandler(InvalidRefreshTokenException.class)
-    public ProblemDetail handleInvalidRefreshTokenException(InvalidRefreshTokenException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+    public ProblemDetail handleInvalidRefreshTokenException(
+            InvalidRefreshTokenException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+
         problem.setTitle("Invalid Refresh Token");
         problem.setDetail(ex.getMessage());
 
         return problem;
     }
 
-    // Password Mismatched exception
     @ExceptionHandler(PasswordMismatchedException.class)
-    public ProblemDetail handlePasswordMismatchedException(PasswordMismatchedException ex) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+    public ProblemDetail handlePasswordMismatchedException(
+            PasswordMismatchedException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
         problem.setTitle("Incorrect Password");
         problem.setDetail(ex.getMessage());
 
@@ -110,7 +125,9 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleAccountLockedException(
             AccountLockedException ex
     ) {
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+
         problem.setTitle("Account Locked");
         problem.setDetail(ex.getMessage());
 
@@ -121,10 +138,11 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBadCredentialException(
             BadCredentialsException ex
     ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
 
-        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
         problem.setTitle("Authentication Failed");
-        problem.setDetail("Invalid Email or password");
+        problem.setDetail("Invalid Email or Password");
 
         return problem;
     }
@@ -140,6 +158,38 @@ public class GlobalExceptionHandler {
         problem.setDetail(
                 "You do not have permission to perform this action"
         );
+
+        return problem;
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problem.setTitle("Invalid Request");
+
+        String detail = "Request body contains an invalid value";
+
+        Throwable cause = ex.getCause();
+
+        if (cause instanceof InvalidFormatException invalidFormatException) {
+
+            String field = invalidFormatException
+                    .getPath()
+                    .getLast()
+                    .getPropertyName();
+
+            Object value = invalidFormatException.getValue();
+
+            detail = "Value '" + value
+                    + "' is invalid for field '"
+                    + field + "'";
+        }
+
+        problem.setDetail(detail);
 
         return problem;
     }

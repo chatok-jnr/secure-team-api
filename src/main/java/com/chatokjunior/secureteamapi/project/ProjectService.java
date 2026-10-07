@@ -1,18 +1,27 @@
 package com.chatokjunior.secureteamapi.project;
 
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
+import com.chatokjunior.secureteamapi.exception.ForbiddenException;
+import com.chatokjunior.secureteamapi.exception.ProjectMemberAlreadyExistsException;
+import com.chatokjunior.secureteamapi.exception.ProjectNotFoundException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
+import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
+import com.chatokjunior.secureteamapi.project.repository.ProjectMemberRepository;
 import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
+import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +29,7 @@ public class ProjectService {
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
     @Transactional
     public CreateProjectResponse createProject(CreateProjectRequest request) {
@@ -50,5 +60,37 @@ public class ProjectService {
                 .build();
 
         return  response;
+    }
+
+    @Transactional
+    public String addProjectMember(UUID projectId, UUID employeeId) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User currentUser = userDetails.getUser();
+
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new UserNotFoundException("Member not found"));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
+
+        if(!currentUser.getRole().equals(Role.ADMIN) && !currentUser.getId().equals(project.getManager().getId())) {
+            throw new ForbiddenException("You are not authorized to perform this operation");
+        }
+
+        boolean isExist = projectMemberRepository.existsByProjectIdAndEmployeeId(projectId, employeeId);
+        if(isExist) {
+            throw new ProjectMemberAlreadyExistsException("This Member is Already in this Project");
+        }
+
+        ProjectMember projectMember = ProjectMember.builder()
+                .employee(employee)
+                .project(project)
+                .build();
+
+        projectMemberRepository.save(projectMember);
+
+        return "Member Added Successfully";
     }
 }

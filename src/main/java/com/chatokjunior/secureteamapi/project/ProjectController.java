@@ -6,10 +6,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -26,4 +25,16 @@ public class ProjectController {
     ) {
         return ResponseEntity.ok(projectService.createProject(request));
     }
+
+    @PostMapping("/{projectId}/members/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<String> addProjectMember(
+            @PathVariable("projectId")
+            UUID projectId,
+            @PathVariable("userId")
+            UUID userId
+    ) {
+        return ResponseEntity.ok(projectService.addProjectMember(projectId, userId));
+    }
+
 }

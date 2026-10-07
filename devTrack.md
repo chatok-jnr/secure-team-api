@@ -226,7 +226,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 19. Add project member
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** in_progress  |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `POST /api/projects/{projectId}/members/{userId}`
 - **Depends on:** Project, User, ProjectMember, Authorization
 - **Access:** ADMIN, Project Manager

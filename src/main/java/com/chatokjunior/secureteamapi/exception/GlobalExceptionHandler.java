@@ -43,6 +43,43 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(ProjectMemberAlreadyExistsException.class)
+    public ProblemDetail handleProjectMemberAlreadyExistException(
+            ProjectMemberAlreadyExistsException ex
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+
+        problem.setTitle("Project Member Already Exist");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ProblemDetail handleProjectNotFoundException(
+        ProjectNotFoundException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("Project Not Found");
+
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbiddenException(
+            ForbiddenException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Permission");
+
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ProblemDetail handleUserNotFound(
             UserNotFoundException ex

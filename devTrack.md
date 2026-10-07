@@ -211,7 +211,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 17. Create project
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 4
+- **Status:** done |  **Priority:** Medium  |  **Level:** 4
 - **Endpoint:** `POST /api/projects`
 - **Depends on:** Project, User, Role, Authorization
 - **Access:** ADMIN, MANAGER
@@ -220,7 +220,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 18. ProjectMember relationship (entity + repository)
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** ⬜ done  |  **Priority:** Medium  |  **Level:** 5
 - **Depends on:** Project, User
 - **Blocked by:** #16
 

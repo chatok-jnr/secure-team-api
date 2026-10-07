@@ -1,12 +1,28 @@
 package com.chatokjunior.secureteamapi.project.repository;
 
 import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UUID> {
-    boolean existsByProjectIdAndEmployeeId(UUID projectId, UUID employeeId);
-    Optional<ProjectMember> findByProjectIdAndEmployeeId(UUID projectId, UUID employeeId);
+    Optional<ProjectMember> findByProjectIdAndMemberId(UUID projectId, UUID memberId);
+
+    @Query("""
+        SELECT  u.id AS id,
+                u.fullName as fullName,
+                u.email as email,
+                u.role as role,
+                u.enabled as enabled
+        FROM ProjectMember pm
+        JOIN pm.member u
+        WHERE pm.project.id = :projectId
+""")
+    List<ProjectMemberProjection> getProjectMembersByProjectId(UUID projectId);
+
+    boolean existsByProjectIdAndMemberId(UUID projectId, UUID memberId);
 }

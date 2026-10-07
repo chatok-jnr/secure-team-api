@@ -235,7 +235,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 20. Remove project member
 
-- **Status:**  in_progress  |  **Priority:** Medium  |  **Level:** 5
+- **Status:**  done  |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `DELETE /api/projects/{projectId}/members/{userId}`
 - **Depends on:** Project, User, ProjectMember, Authorization
 - **Access:** ADMIN, Project Manager
@@ -244,7 +244,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 21. Get project members
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** done |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `GET /api/projects/{projectId}/members`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN, MANAGER, Project Members

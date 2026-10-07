@@ -4,10 +4,12 @@ import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
+import com.chatokjunior.secureteamapi.project.dto.ProjectMemberResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
 import com.chatokjunior.secureteamapi.project.repository.ProjectMemberRepository;
 import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -18,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,14 +33,7 @@ public class ProjectService {
 
     @Transactional
     public CreateProjectResponse createProject(CreateProjectRequest request) {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        CustomUserDetails userDetails =
-                (CustomUserDetails) authentication.getPrincipal();
-
-        User manager = userDetails.getUser();
+        User manager = currentUser();
 
         Project project = Project.builder()
                 .name(request.name())
@@ -60,13 +56,10 @@ public class ProjectService {
     }
 
     @Transactional
-    public String addProjectMember(UUID projectId, UUID employeeId) {
+    public String addProjectMember(UUID projectId, UUID memberId) {
+        User currentUser = currentUser();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User currentUser = userDetails.getUser();
-
-        User employee = userRepository.findById(employeeId)
+        User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new UserNotFoundException("Member not found"));
 
         Project project = projectRepository.findById(projectId)
@@ -76,13 +69,13 @@ public class ProjectService {
             throw new ForbiddenException("You are not authorized to perform this operation");
         }
 
-        boolean isExist = projectMemberRepository.existsByProjectIdAndEmployeeId(projectId, employeeId);
+        boolean isExist = projectMemberRepository.existsByProjectIdAndMemberId(projectId, memberId);
         if(isExist) {
             throw new ProjectMemberAlreadyExistsException("This Member is Already in this Project");
         }
 
         ProjectMember projectMember = ProjectMember.builder()
-                .employee(employee)
+                .member(member)
                 .project(project)
                 .build();
 
@@ -92,12 +85,10 @@ public class ProjectService {
     }
 
     @Transactional
-    public String removeProjectMember(UUID projectId, UUID employeeId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User currentUser = userDetails.getUser();
+    public String removeProjectMember(UUID projectId, UUID memberId) {
+        User currentUser = currentUser();
 
-        User employee = userRepository.findById(employeeId)
+        User member = userRepository.findById(memberId)
                 .orElseThrow(() -> new UserNotFoundException("Member not found"));
 
         Project project = projectRepository.findById(projectId)
@@ -107,11 +98,38 @@ public class ProjectService {
             throw new ForbiddenException("You are not authorized to perform this operation");
         }
 
-        ProjectMember projectMember = projectMemberRepository.findByProjectIdAndEmployeeId(projectId, employeeId)
+        ProjectMember projectMember = projectMemberRepository.findByProjectIdAndMemberId(projectId, memberId)
                 .orElseThrow(() -> new ProjectMemberNotFoundException("This User Is Not A Member Of This Project"));
 
         projectMemberRepository.delete(projectMember);
 
         return "Member is Removed Successfully From this Project";
+    }
+
+
+    public List<ProjectMemberProjection> getProjectMembers(UUID projectId) {
+
+        User currentUser = currentUser();
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
+
+        if(
+                !currentUser.getRole().equals(Role.ADMIN) &&
+                !project.getManager().getId().equals(currentUser.getId()) &&
+                !projectMemberRepository.existsByProjectIdAndMemberId(projectId, currentUser.getId())
+        ) {
+            throw new ForbiddenException("You are not authorized to perform this operation");
+        }
+
+        List<ProjectMemberProjection> projectMembers = projectMemberRepository.getProjectMembersByProjectId(projectId);
+        return projectMembers;
+    }
+
+
+    private User currentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        return userDetails.getUser();
     }
 }

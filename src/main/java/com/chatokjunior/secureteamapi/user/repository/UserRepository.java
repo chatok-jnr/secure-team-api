@@ -34,5 +34,6 @@ public interface UserRepository extends JpaRepository<User, UUID>{
     where u.id = :id
 """)
     Optional<GetUserDetailsDto> getUserById(UUID id);
+
 }
 

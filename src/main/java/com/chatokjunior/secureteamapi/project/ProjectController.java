@@ -2,12 +2,14 @@ package com.chatokjunior.secureteamapi.project;
 
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -37,14 +39,22 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.addProjectMember(projectId, userId));
     }
 
-    @DeleteMapping("/{projectId}/members/{userId}")
+    @DeleteMapping("/{projectId}/members/{memberId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> removeProjectMember(
             @PathVariable("projectId")
             UUID projectId,
-            @PathVariable("userId")
-            UUID userId
+            @PathVariable("memberId")
+            UUID memberId
     ) {
-        return ResponseEntity.ok(projectService.removeProjectMember(projectId, userId));
+        return ResponseEntity.ok(projectService.removeProjectMember(projectId, memberId));
+    }
+
+    @GetMapping("/{projectId}/members")
+    public ResponseEntity<List<ProjectMemberProjection>> getProjectMembers(
+            @PathVariable("projectId")
+            UUID projectId
+    ) {
+        return ResponseEntity.ok(projectService.getProjectMembers(projectId));
     }
 }

@@ -3,8 +3,6 @@ package com.chatokjunior.secureteamapi.project.entity;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,7 +10,7 @@ import java.util.UUID;
 @Table(name = "project_members",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_project_member",
-                columnNames = {"project_id", "employee_id"}
+                columnNames = {"project_id", "member_id"}
         ))
 @Entity
 @NoArgsConstructor
@@ -29,9 +27,9 @@ public class ProjectMember {
     @ManyToOne(fetch = FetchType.LAZY)
     private Project project;
 
-    @JoinColumn(name = "employee_id")
+    @JoinColumn(name = "member_id")
     @ManyToOne
-    private User employee;
+    private User member;
 
     @Column(name = "joined_at", nullable = false, updatable = false)
     @Builder.Default

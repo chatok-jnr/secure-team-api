@@ -44,7 +44,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 13 | Create user | done |
 | 14 | Change user role | done |
 | 15 | Disable user | done |
-| 16 | Project entity + ProjectRepository | ⬜ To Do |
+| 16 | Project entity + ProjectRepository | in_progress |
 | 17 | Create project | ⬜ To Do |
 | 18 | ProjectMember relationship (entity + repository) | ⬜ To Do |
 | 19 | Add project member | ⬜ To Do |

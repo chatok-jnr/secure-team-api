@@ -44,8 +44,8 @@ Each feature is built only after everything it depends on already exists, so not
 | 13 | Create user | done |
 | 14 | Change user role | done |
 | 15 | Disable user | done |
-| 16 | Project entity + ProjectRepository | in_progress |
-| 17 | Create project | ⬜ To Do |
+| 16 | Project entity + ProjectRepository | done |
+| 17 | Create project | in_progress |
 | 18 | ProjectMember relationship (entity + repository) | ⬜ To Do |
 | 19 | Add project member | ⬜ To Do |
 | 20 | Remove project member | ⬜ To Do |
@@ -211,7 +211,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 17. Create project
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 4
+- **Status:** done  |  **Priority:** Medium  |  **Level:** 4
 - **Endpoint:** `POST /api/projects`
 - **Depends on:** Project, User, Role, Authorization
 - **Access:** ADMIN, MANAGER

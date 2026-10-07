@@ -37,4 +37,14 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.addProjectMember(projectId, userId));
     }
 
+    @DeleteMapping("/{projectId}/members/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<String> removeProjectMember(
+            @PathVariable("projectId")
+            UUID projectId,
+            @PathVariable("userId")
+            UUID userId
+    ) {
+        return ResponseEntity.ok(projectService.removeProjectMember(projectId, userId));
+    }
 }

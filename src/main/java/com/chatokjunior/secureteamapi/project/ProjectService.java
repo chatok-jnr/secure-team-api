@@ -1,10 +1,7 @@
 package com.chatokjunior.secureteamapi.project;
 
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
-import com.chatokjunior.secureteamapi.exception.ForbiddenException;
-import com.chatokjunior.secureteamapi.exception.ProjectMemberAlreadyExistsException;
-import com.chatokjunior.secureteamapi.exception.ProjectNotFoundException;
-import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
@@ -92,5 +89,29 @@ public class ProjectService {
         projectMemberRepository.save(projectMember);
 
         return "Member Added Successfully";
+    }
+
+    @Transactional
+    public String removeProjectMember(UUID projectId, UUID employeeId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User currentUser = userDetails.getUser();
+
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new UserNotFoundException("Member not found"));
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
+
+        if(!currentUser.getRole().equals(Role.ADMIN) && !currentUser.getId().equals(project.getManager().getId())) {
+            throw new ForbiddenException("You are not authorized to perform this operation");
+        }
+
+        ProjectMember projectMember = projectMemberRepository.findByProjectIdAndEmployeeId(projectId, employeeId)
+                .orElseThrow(() -> new ProjectMemberNotFoundException("This User Is Not A Member Of This Project"));
+
+        projectMemberRepository.delete(projectMember);
+
+        return "Member is Removed Successfully From this Project";
     }
 }

@@ -73,7 +73,31 @@ public class GlobalExceptionHandler {
             ForbiddenException ex
     ) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-        problem.setTitle("Permission");
+        problem.setTitle("Forbidden");
+
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(NotAProjectMemberException.class)
+    public ProblemDetail handleForbiddenException(
+            NotAProjectMemberException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Not A Project Member");
+
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(ProjectMemberNotFoundException.class)
+    public ProblemDetail handleForbiddenException(
+            ProjectMemberNotFoundException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Project Member Not Found");
 
         problem.setDetail(ex.getMessage());
 

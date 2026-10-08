@@ -4,7 +4,6 @@ import com.chatokjunior.secureteamapi.manager.dto.ManagerDashboardResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
-import com.chatokjunior.secureteamapi.project.repository.projection.RecentProjectRow;
 import com.chatokjunior.secureteamapi.project.repository.projection.StatusCount;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

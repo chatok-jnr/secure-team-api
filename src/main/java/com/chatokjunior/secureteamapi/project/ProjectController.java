@@ -102,6 +102,7 @@ public class ProjectController {
             @PathVariable("id")
             UUID id
     ) {
-        return ResponseEntity.ok(projectService.deleteProjectById(id));
+        projectService.deleteProjectById(id);
+        return ResponseEntity.noContent().build();
     }
 }

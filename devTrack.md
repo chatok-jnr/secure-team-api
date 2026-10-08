@@ -280,7 +280,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 25. Delete project
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** done  |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `DELETE /api/projects/{id}`
 - **Depends on:** Project, Authorization
 - **Access:** ADMIN

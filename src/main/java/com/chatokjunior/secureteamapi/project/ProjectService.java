@@ -167,6 +167,7 @@ public class ProjectService {
         return project;
     }
 
+    @Transactional
     public CreateProjectResponse updateProjectById(UUID id, ProjectUpdateRequest request) {
         User currentUser = currentUser();
 
@@ -198,6 +199,16 @@ public class ProjectService {
                 .build();
     }
 
+    @Transactional
+    public Void deleteProjectById(UUID id) {
+
+        Project project = projectRepository.findById(id)
+                        .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
+
+        projectRepository.delete(project);
+
+        return null;
+    }
 
     // =========================
     // Helper Functions

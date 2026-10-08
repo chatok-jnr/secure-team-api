@@ -291,7 +291,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 26. Manager dashboard
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 7
+- **Status:** in_progress |  **Priority:** Medium  |  **Level:** 7
 - **Endpoint:** `GET /api/manager/dashboard`
 - **Depends on:** User, Project, ProjectMember
 - **Access:** MANAGER
@@ -311,7 +311,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 28. Method-level security (@EnableMethodSecurity, @PreAuthorize)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 9
+- **Status:** ⬜ done  |  **Priority:** Low  |  **Level:** 9
 - **Depends on:** All existing endpoints
 - **Blocked by:** #27
 
@@ -343,7 +343,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 33. Account locking (failedLoginAttempts, accountNonLocked, lockedAt)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 12
+- **Status:** done |  **Priority:** Low  |  **Level:** 12
 - **Depends on:** User, Login, UserDetails
 - **Blocked by:** #10, #4
 

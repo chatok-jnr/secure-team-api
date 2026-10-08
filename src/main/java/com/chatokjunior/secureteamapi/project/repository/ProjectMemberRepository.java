@@ -24,5 +24,12 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
 """)
     List<ProjectMemberProjection> getProjectMembersByProjectId(UUID projectId);
 
+    @Query("""
+    select count(distinct pm.member.id)
+    from ProjectMember pm
+    where pm.project.manager.id = :managerId
+""")
+    long countDistinctMembersByManagerId(UUID managerId);
+
     boolean existsByProjectIdAndMemberId(UUID projectId, UUID memberId);
 }

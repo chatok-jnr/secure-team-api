@@ -46,6 +46,9 @@ public class ProjectService {
                 .build();
 
         Project newProject = projectRepository.save(project);
+        projectRepository.flush();
+
+        System.out.println(newProject.getCreatedAt());
 
         CreateProjectResponse response = CreateProjectResponse.builder()
                 .id(newProject.getId())

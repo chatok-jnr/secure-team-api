@@ -4,20 +4,21 @@ import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
-import com.chatokjunior.secureteamapi.project.dto.ProjectMemberResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
 import com.chatokjunior.secureteamapi.project.repository.ProjectMemberRepository;
 import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -126,6 +127,21 @@ public class ProjectService {
         return projectMembers;
     }
 
+    public Page<ProjectResponseProjection> getProjects(Pageable pageable) {
+        User currentUser = currentUser();
+
+        Page<ProjectResponseProjection> projects;
+
+        if(currentUser.getRole().equals(Role.ADMIN)) {
+            projects = projectRepository.getProjects(pageable);
+        } else if(currentUser.getRole().equals(Role.MANAGER)) {
+            projects = projectRepository.getProjectsByManagerId(currentUser.getId(), pageable);
+        } else {
+            projects = projectRepository.getProjectsByMemberId(currentUser.getId(), pageable);
+        }
+
+        return projects;
+    }
 
     private User currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

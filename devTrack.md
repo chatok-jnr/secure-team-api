@@ -271,7 +271,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 24. Update project
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** done |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `PATCH /api/projects/{id}`
 - **Depends on:** Project, User, ProjectMember, Object-level authorization
 - **Access:** ADMIN any; MANAGER own; EMPLOYEE forbidden

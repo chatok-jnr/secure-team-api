@@ -4,6 +4,7 @@ import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
+import com.chatokjunior.secureteamapi.project.dto.ProjectUpdateRequest;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
 import com.chatokjunior.secureteamapi.project.repository.ProjectMemberRepository;
@@ -11,7 +12,7 @@ import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
-import com.chatokjunior.secureteamapi.user.dto.ProjectResponse;
+import com.chatokjunior.secureteamapi.project.dto.ProjectResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -109,7 +110,6 @@ public class ProjectService {
         return "Member is Removed Successfully From this Project";
     }
 
-
     public List<ProjectMemberProjection> getProjectMembers(UUID projectId) {
 
         User currentUser = currentUser();
@@ -167,6 +167,41 @@ public class ProjectService {
         return project;
     }
 
+    public CreateProjectResponse updateProjectById(UUID id, ProjectUpdateRequest request) {
+        User currentUser = currentUser();
+
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
+
+        if(currentUser.getRole().equals(Role.MANAGER) && !currentUser.getId().equals(project.getManager().getId())) {
+            throw new ForbiddenException("You are not permitted to perform this action");
+        }
+
+        if(request.name() != null) project.setName(request.name());
+        if(request.description() != null) project.setDescription(request.description());
+        if(request.status() != null) project.setStatus(request.status());
+        if(request.managerId() != null && currentUser.getRole().equals(Role.ADMIN)) {
+            User newManager = userRepository.findById(request.managerId())
+                    .orElseThrow(() -> new UserNotFoundException("Manager not found"));
+            project.setManager(newManager);
+        }
+
+        Project updatedProject = projectRepository.save(project);
+
+        return CreateProjectResponse.builder()
+                .id(updatedProject.getId())
+                .name(updatedProject.getName())
+                .description(updatedProject.getName())
+                .status(updatedProject.getStatus())
+                .managerId(updatedProject.getManager().getId())
+                .createdAt(updatedProject.getCreatedAt())
+                .build();
+    }
+
+
+    // =========================
+    // Helper Functions
+    // =========================
     private User currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

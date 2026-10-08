@@ -2,6 +2,7 @@ package com.chatokjunior.secureteamapi.project;
 
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
+import com.chatokjunior.secureteamapi.project.dto.ProjectUpdateRequest;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
@@ -81,5 +82,26 @@ public class ProjectController {
             UUID id
     ) {
         return ResponseEntity.ok(projectService.getProjectById(id));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<CreateProjectResponse> updateProject(
+            @PathVariable("id")
+            UUID id,
+            @RequestBody
+            @Valid
+            ProjectUpdateRequest request
+    ) {
+        return ResponseEntity.ok(projectService.updateProjectById(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProject(
+            @PathVariable("id")
+            UUID id
+    ) {
+        return ResponseEntity.ok(projectService.deleteProjectById(id));
     }
 }

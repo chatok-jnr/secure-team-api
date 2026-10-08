@@ -1,6 +1,4 @@
-package com.chatokjunior.secureteamapi.user.dto;
-
-import com.chatokjunior.secureteamapi.project.entity.Project;
+package com.chatokjunior.secureteamapi.project.dto;
 
 import java.util.UUID;
 

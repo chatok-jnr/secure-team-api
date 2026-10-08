@@ -3,6 +3,7 @@ package com.chatokjunior.secureteamapi.project;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
 import jakarta.validation.Valid;
@@ -72,5 +73,13 @@ public class ProjectController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(projectService.getProjects(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectDetailsProjection> getProjectDetails(
+            @PathVariable("id")
+            UUID id
+    ) {
+        return ResponseEntity.ok(projectService.getProjectById(id));
     }
 }

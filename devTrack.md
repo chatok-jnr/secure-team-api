@@ -253,7 +253,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 22. Get projects (ADMIN all, MANAGER managed, EMPLOYEE member-of)
 
-- **Status:** in_progress  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** done  |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `GET /api/projects`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN, MANAGER, EMPLOYEE
@@ -262,7 +262,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 23. Get project by ID (object-level authorization)
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** ⬜ done |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `GET /api/projects/{id}`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN any; MANAGER own; EMPLOYEE member

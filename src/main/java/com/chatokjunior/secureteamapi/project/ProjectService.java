@@ -8,8 +8,10 @@ import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.entity.ProjectMember;
 import com.chatokjunior.secureteamapi.project.repository.ProjectMemberRepository;
 import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
+import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
+import com.chatokjunior.secureteamapi.user.dto.ProjectResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -141,6 +143,28 @@ public class ProjectService {
         }
 
         return projects;
+    }
+
+    public ProjectDetailsProjection getProjectById(UUID id) {
+        User currentUser = currentUser();
+
+        ProjectDetailsProjection project;
+        if(currentUser.getRole().equals(Role.ADMIN)) {
+            project = projectRepository.getProjectDetailsById(id)
+                    .orElseThrow(()-> new ProjectNotFoundException("Project not found"));
+        } else if(currentUser.getRole().equals(Role.MANAGER)) {
+            project = projectRepository.getProjectDetailsById(id)
+                    .orElseThrow(()-> new ProjectNotFoundException("Project not found"));
+
+            if(!project.managerId().equals(currentUser.getId())) {
+                throw new ForbiddenException("You Don't Have Access To This Project");
+            }
+        } else {
+            project = projectRepository.getProjectDetailsByIdForMember(id, currentUser.getId())
+                    .orElseThrow(()-> new ProjectNotFoundException("Project not found"));
+        }
+
+        return project;
     }
 
     private User currentUser() {

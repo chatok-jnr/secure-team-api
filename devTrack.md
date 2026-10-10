@@ -291,7 +291,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 26. Manager dashboard
 
-- **Status:** in_progress |  **Priority:** Medium  |  **Level:** 7
+- **Status:** done |  **Priority:** Medium  |  **Level:** 7
 - **Endpoint:** `GET /api/manager/dashboard`
 - **Depends on:** User, Project, ProjectMember
 - **Access:** MANAGER
@@ -300,7 +300,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 27. Admin dashboard
 
-- **Status:** ⬜ To Do  |  **Priority:** Medium  |  **Level:** 8
+- **Status:** in_progress |  **Priority:** Medium  |  **Level:** 8
 - **Endpoint:** `GET /api/admin/dashboard`
 - **Depends on:** User, Project, ProjectMember
 - **Access:** ADMIN

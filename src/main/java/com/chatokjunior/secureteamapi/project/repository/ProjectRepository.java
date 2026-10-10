@@ -1,5 +1,6 @@
 package com.chatokjunior.secureteamapi.project.repository;
 
+import com.chatokjunior.secureteamapi.admin.dto.AdminDashboardResponse;
 import com.chatokjunior.secureteamapi.manager.dto.ManagerDashboardResponse;
 import com.chatokjunior.secureteamapi.project.entity.Project;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
@@ -107,4 +108,25 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
         order by p.createdAt desc
     """)
     List<ManagerDashboardResponse.RecentProject> findRecentWithMemberCount(UUID managerId, Pageable pageable);
+
+    @Query("""
+    select p.status as status, count(p.id) as count
+    from Project p
+    group by p.status
+""")
+    List<StatusCount> countProjectByStatus();
+
+    @Query("""
+    SELECT p.id as id,
+           p.name as name,
+           p.status as status,
+           u.fullName as fullName,
+           COUNT(pm.id) as count
+    FROM Project p
+    LEFT JOIN ProjectMember pm on pm.project = p
+    LEFT JOIN p.manager u
+    GROUP BY p.id, u.id
+    ORDER BY p.createdAt DESC
+""")
+    List<AdminDashboardResponse.RecentProject> getRecentProject(Pageable pageable);
 }

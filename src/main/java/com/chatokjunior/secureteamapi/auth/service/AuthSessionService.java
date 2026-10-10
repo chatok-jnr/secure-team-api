@@ -30,6 +30,7 @@ public class AuthSessionService {
         accessTokenCookie.setSecure(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(15 * 60);
+        accessTokenCookie.setAttribute("SameSite", "Strict");
 
         response.addCookie(accessTokenCookie);
     }
@@ -50,6 +51,7 @@ public class AuthSessionService {
         refreshTokenCookie.setSecure(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
+        refreshTokenCookie.setAttribute("SameSite", "Strict");
 
         response.addCookie(refreshTokenCookie);
     }

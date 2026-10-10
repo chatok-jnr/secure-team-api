@@ -39,29 +39,29 @@ Each feature is built only after everything it depends on already exists, so not
 | 08 | Get my profile | ✅ Done |
 | 09 | Change my password (revoke existing sessions) | done |
 | 10 | Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails) | ✅ Done |
-| 11 | Get all users | done |
-| 12 | Get user by ID | done |
-| 13 | Create user | done |
-| 14 | Change user role | done |
-| 15 | Disable user | done |
-| 16 | Project entity + ProjectRepository | done |
-| 17 | Create project | in_progress |
-| 18 | ProjectMember relationship (entity + repository) | ⬜ To Do |
-| 19 | Add project member | ⬜ To Do |
-| 20 | Remove project member | ⬜ To Do |
-| 21 | Get project members | ⬜ To Do |
-| 22 | Get projects (ADMIN all, MANAGER managed, EMPLOYEE member-of) | ⬜ To Do |
-| 23 | Get project by ID (object-level authorization) | ⬜ To Do |
-| 24 | Update project | ⬜ To Do |
-| 25 | Delete project | ⬜ To Do |
-| 26 | Manager dashboard | ⬜ To Do |
-| 27 | Admin dashboard | ⬜ To Do |
-| 28 | Method-level security (@EnableMethodSecurity, @PreAuthorize) | ⬜ To Do |
+| 11 | Get all users | ✅ Done |
+| 12 | Get user by ID | ✅ Done |
+| 13 | Create user | ✅ Done |
+| 14 | Change user role | ✅ Done |
+| 15 | Disable user | ✅ Done |
+| 16 | Project entity + ProjectRepository | ✅ Done |
+| 17 | Create project | ✅ Done |
+| 18 | ProjectMember relationship (entity + repository) | ✅ Done |
+| 19 | Add project member | ✅ Done |
+| 20 | Remove project member | ✅ Done |
+| 21 | Get project members | ✅ Done |
+| 22 | Get projects (ADMIN all, MANAGER managed, EMPLOYEE member-of) | ✅ Done |
+| 23 | Get project by ID (object-level authorization) | ✅ Done |
+| 24 | Update project | ✅ Done |
+| 25 | Delete project | ✅ Done |
+| 26 | Manager dashboard | ✅ Done |
+| 27 | Admin dashboard | ✅ Done |
+| 28 | Method-level security (@EnableMethodSecurity, @PreAuthorize) | ✅ Done |
 | 29 | Permissions / authorities (USER_*, PROJECT_*) | ⬜ To Do |
-| 30 | CSRF protection | ⬜ To Do |
-| 31 | CORS configuration (credentialed requests) | ⬜ To Do |
-| 32 | Cookie hardening (SameSite, HttpOnly, Secure) | ⬜ To Do |
-| 33 | Account locking (failedLoginAttempts, accountNonLocked, lockedAt) | ⬜ To Do |
+| 30 | CSRF protection | ✅ Done |
+| 31 | CORS configuration (credentialed requests) | ✅ Done |
+| 32 | Cookie hardening (SameSite, HttpOnly, Secure) | ✅ Done |
+| 33 | Account locking (failedLoginAttempts, accountNonLocked, lockedAt) | ✅ Done |
 | 34 | Forgot password | ⬜ To Do |
 | 35 | Reset password (revoke all refresh tokens) | ⬜ To Do |
 | 36 | Session management: list and revoke sessions | ⬜ To Do |
@@ -73,19 +73,19 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 01. Security foundation (SecurityFilterChain, JWT service/filter, cookies, error handling)
 
-- **Status:** done |  **Priority:** High  |  **Level:** 0
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 0
 - **Depends on:** Nothing
 - **Blocked by:** none
 
 ### 02. User entity + UserRepository
 
-- **Status:** done |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 1
 - **Depends on:** Database, JPA
 - **Blocked by:** #1
 
 ### 03. User registration
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done  |  **Priority:** High  |  **Level:** 1
 - **Endpoint:** `POST /api/auth/register`
 - **Depends on:** User, UserRepository, PasswordEncoder
 - **Access:** Public
@@ -94,7 +94,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 04. User login
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 1
 - **Endpoint:** `POST /api/auth/login`
 - **Depends on:** User, UserDetailsService, AuthenticationManager, AuthenticationProvider, PasswordEncoder, JwtService
 - **Access:** Public
@@ -103,7 +103,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 05. Refresh token subsystem + refresh endpoint
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 1
 - **Endpoint:** `POST /api/auth/refresh`
 - **Depends on:** User, Authentication, JWT, RefreshToken, RefreshTokenRepository, RefreshTokenService
 - **Access:** Authenticated (refresh cookie)
@@ -112,7 +112,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 06. Refresh token rotation (validate A, revoke A, create B, issue new tokens)
 
-- **Status:** done |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 1
 - **Endpoint:** `POST /api/auth/refresh`
 - **Depends on:** Refresh token subsystem
 - **Access:** Authenticated (refresh cookie)
@@ -121,7 +121,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 07. Logout
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 1
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 1
 - **Endpoint:** `POST /api/auth/logout`
 - **Depends on:** RefreshToken, RefreshTokenService, Cookies
 - **Access:** Authenticated
@@ -132,7 +132,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 08. Get my profile
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 2
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 2
 - **Endpoint:** `GET /api/users/me`
 - **Depends on:** User, Authentication, SecurityContext
 - **Access:** Authenticated
@@ -141,7 +141,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 09. Change my password (revoke existing sessions)
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 2
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 2
 - **Endpoint:** `PATCH /api/users/me/password`
 - **Depends on:** User, PasswordEncoder, Authentication, RefreshToken
 - **Access:** Authenticated
@@ -150,7 +150,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 10. Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails)
 
-- **Status:** done  |  **Priority:** High  |  **Level:** 2
+- **Status:** ✅ Done |  **Priority:** High  |  **Level:** 2
 - **Depends on:** User, UserDetails
 - **Blocked by:** #2
 
@@ -158,7 +158,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 11. Get all users
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 3
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 3
 - **Endpoint:** `GET /api/users`
 - **Depends on:** User, UserRepository, Role, Authorization
 - **Access:** ADMIN
@@ -167,7 +167,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 12. Get user by ID
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 3
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 3
 - **Endpoint:** `GET /api/users/{id}`
 - **Depends on:** User, UserRepository, Role, Authorization
 - **Access:** ADMIN any; EMPLOYEE self; MANAGER later
@@ -176,7 +176,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 13. Create user
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 3
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 3
 - **Endpoint:** `POST /api/users`
 - **Depends on:** User, UserRepository, PasswordEncoder, Role, Authorization
 - **Access:** ADMIN
@@ -185,7 +185,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 14. Change user role
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 3
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 3
 - **Endpoint:** `PATCH /api/users/{id}/role`
 - **Depends on:** User, Role, Authorization
 - **Access:** ADMIN
@@ -194,7 +194,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 15. Disable user
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 3
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 3
 - **Endpoint:** `PATCH /api/users/{id}/disable`
 - **Depends on:** User, Account enabled/disabled, Authorization
 - **Access:** ADMIN
@@ -205,13 +205,13 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 16. Project entity + ProjectRepository
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 4
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 4
 - **Depends on:** User (manager)
 - **Blocked by:** #15
 
 ### 17. Create project
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 4
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 4
 - **Endpoint:** `POST /api/projects`
 - **Depends on:** Project, User, Role, Authorization
 - **Access:** ADMIN, MANAGER
@@ -220,13 +220,13 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 18. ProjectMember relationship (entity + repository)
 
-- **Status:** ⬜ done  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** ✅ Done  |  **Priority:** Medium  |  **Level:** 5
 - **Depends on:** Project, User
 - **Blocked by:** #16
 
 ### 19. Add project member
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `POST /api/projects/{projectId}/members/{userId}`
 - **Depends on:** Project, User, ProjectMember, Authorization
 - **Access:** ADMIN, Project Manager
@@ -235,7 +235,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 20. Remove project member
 
-- **Status:**  done  |  **Priority:** Medium  |  **Level:** 5
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `DELETE /api/projects/{projectId}/members/{userId}`
 - **Depends on:** Project, User, ProjectMember, Authorization
 - **Access:** ADMIN, Project Manager
@@ -244,7 +244,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 21. Get project members
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 5
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 5
 - **Endpoint:** `GET /api/projects/{projectId}/members`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN, MANAGER, Project Members
@@ -253,7 +253,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 22. Get projects (ADMIN all, MANAGER managed, EMPLOYEE member-of)
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `GET /api/projects`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN, MANAGER, EMPLOYEE
@@ -262,7 +262,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 23. Get project by ID (object-level authorization)
 
-- **Status:** ⬜ done |  **Priority:** Medium  |  **Level:** 6
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `GET /api/projects/{id}`
 - **Depends on:** Project, ProjectMember, Authorization
 - **Access:** ADMIN any; MANAGER own; EMPLOYEE member
@@ -271,7 +271,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 24. Update project
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 6
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `PATCH /api/projects/{id}`
 - **Depends on:** Project, User, ProjectMember, Object-level authorization
 - **Access:** ADMIN any; MANAGER own; EMPLOYEE forbidden
@@ -280,7 +280,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 25. Delete project
 
-- **Status:** done  |  **Priority:** Medium  |  **Level:** 6
+- **Status:** ✅ Done  |  **Priority:** Medium  |  **Level:** 6
 - **Endpoint:** `DELETE /api/projects/{id}`
 - **Depends on:** Project, Authorization
 - **Access:** ADMIN
@@ -291,7 +291,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 26. Manager dashboard
 
-- **Status:** done |  **Priority:** Medium  |  **Level:** 7
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 7
 - **Endpoint:** `GET /api/manager/dashboard`
 - **Depends on:** User, Project, ProjectMember
 - **Access:** MANAGER
@@ -300,7 +300,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 27. Admin dashboard
 
-- **Status:** in_progress |  **Priority:** Medium  |  **Level:** 8
+- **Status:** ✅ Done |  **Priority:** Medium  |  **Level:** 8
 - **Endpoint:** `GET /api/admin/dashboard`
 - **Depends on:** User, Project, ProjectMember
 - **Access:** ADMIN
@@ -311,7 +311,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 28. Method-level security (@EnableMethodSecurity, @PreAuthorize)
 
-- **Status:** ⬜ done  |  **Priority:** Low  |  **Level:** 9
+- **Status:** ✅ Done  |  **Priority:** Low  |  **Level:** 9
 - **Depends on:** All existing endpoints
 - **Blocked by:** #27
 
@@ -323,19 +323,19 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 30. CSRF protection
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 11
+- **Status:** ✅ Done  |  **Priority:** Low  |  **Level:** 11
 - **Depends on:** Working auth flow
 - **Blocked by:** #27
 
 ### 31. CORS configuration (credentialed requests)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 11
+- **Status:** ✅ Done  |  **Priority:** Low  |  **Level:** 11
 - **Depends on:** Working auth flow
 - **Blocked by:** #27
 
 ### 32. Cookie hardening (SameSite, HttpOnly, Secure)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 11
+- **Status:** ✅ Done  |  **Priority:** Low  |  **Level:** 11
 - **Depends on:** Working auth flow
 - **Blocked by:** #27
 
@@ -343,7 +343,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 33. Account locking (failedLoginAttempts, accountNonLocked, lockedAt)
 
-- **Status:** done |  **Priority:** Low  |  **Level:** 12
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 12
 - **Depends on:** User, Login, UserDetails
 - **Blocked by:** #10, #4
 

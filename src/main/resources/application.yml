@@ -1,19 +1,42 @@
+
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     url: jdbc:postgresql://localhost:5432/secure_team
     username: postgres
-    password: restore2745
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
 jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 900000
   refresh-token-expiration: 604800000
 
-# logging:
-#   level:
-#     org.springframework.security: TRACE
+app:
+  security:
+    password-reset-token-ttl: 10m
+  mail:
+    from: ${MAIL_FROM}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}

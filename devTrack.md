@@ -62,7 +62,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 31 | CORS configuration (credentialed requests) | ✅ Done |
 | 32 | Cookie hardening (SameSite, HttpOnly, Secure) | ✅ Done |
 | 33 | Account locking (failedLoginAttempts, accountNonLocked, lockedAt) | ✅ Done |
-| 34 | Forgot password | ⬜ To Do |
+| 34 | Forgot password | ✅ Done |
 | 35 | Reset password (revoke all refresh tokens) | ⬜ To Do |
 | 36 | Session management: list and revoke sessions | ⬜ To Do |
 | 37 | Logout all | ⬜ To Do |
@@ -349,7 +349,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 34. Forgot password
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 12
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 12
 - **Endpoint:** `POST /api/auth/forgot-password`
 - **Depends on:** User
 - **Access:** Public

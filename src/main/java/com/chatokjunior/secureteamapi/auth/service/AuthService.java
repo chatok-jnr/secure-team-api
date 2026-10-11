@@ -2,14 +2,16 @@ package com.chatokjunior.secureteamapi.auth.service;
 
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
+import com.chatokjunior.secureteamapi.auth.dto.ForgotPasswordRequest;
 import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
+import com.chatokjunior.secureteamapi.auth.entity.PasswordResetToken;
+import com.chatokjunior.secureteamapi.auth.repository.PasswordResetTokenRepository;
 import com.chatokjunior.secureteamapi.exception.InvalidRefreshTokenException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.notification.EmailService;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
-import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
-import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -17,27 +19,37 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Ref;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.HexFormat;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    @Value("${app.security.password-reset-token-ttl:30m}")
+    private Duration resetTokenTtl;
+
+    private final EmailService emailService;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final AuthSessionService authSessionService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -157,5 +169,61 @@ public class AuthService {
 
         response.addCookie(refreshTokenCookie);
 
+    }
+
+    @Transactional
+    public String forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UserNotFoundException("User with this email not found"));
+
+        int isExist = passwordResetTokenRepository.getPasswordResetTokenByUserId(Instant.now(), user.getId());
+
+        if(isExist > 0) return "A Password Resent Link is Sent to Your Email Address";
+
+        String rawToken = generateToken();
+        String tokenHash = hash(rawToken);
+
+        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
+                .tokenHash(tokenHash)
+                .user(user)
+                .expireAt(Instant.now().plus(resetTokenTtl))
+                .build();
+
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        String to = request.email();
+        String subject = "Secure Team Api password reset request";
+        String body = "If you are request to reset Secure Team Api password, please click on the link below\nhttp://localhost:8080/api/auth/reset/" + rawToken + "\nTeam unmbraCrown";
+
+        emailService.sendMail(
+                to,
+                subject,
+                body
+        );
+
+        return "A Password Resent Link is Sent to Your Email Address";
+    }
+
+    // ===================================================
+    // Helper Functions
+    // ===================================================
+
+    private static final int TOKEN_BYTES = 32;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    private String generateToken() {
+        byte[] bytes = new byte[TOKEN_BYTES];
+        RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String hash(String rawToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hashed);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 not available", e);
+        }
     }
 }

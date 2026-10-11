@@ -1,17 +1,17 @@
 package com.chatokjunior.secureteamapi.auth.service;
 
-import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
-import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
-import com.chatokjunior.secureteamapi.auth.dto.ForgotPasswordRequest;
-import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
+import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.entity.PasswordResetToken;
 import com.chatokjunior.secureteamapi.auth.repository.PasswordResetTokenRepository;
+import com.chatokjunior.secureteamapi.exception.InvalidPasswordResetTokenException;
 import com.chatokjunior.secureteamapi.exception.InvalidRefreshTokenException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.notification.EmailService;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
+import com.chatokjunior.secureteamapi.user.UserService;
+import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -39,6 +39,7 @@ import java.util.HexFormat;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final UserService userService;
     @Value("${app.security.password-reset-token-ttl:30m}")
     private Duration resetTokenTtl;
 
@@ -149,7 +150,6 @@ public class AuthService {
         }
 
 
-
         Cookie accessTokenCookie = new Cookie("accessToken", "");
 
         accessTokenCookie.setHttpOnly(true);
@@ -202,6 +202,44 @@ public class AuthService {
         );
 
         return "A Password Resent Link is Sent to Your Email Address";
+    }
+
+    @Transactional
+    public String resetPassword(
+            HttpServletResponse httpResponse,
+            ResetPasswordRequest request
+    ) {
+
+        String hashToken = hash(request.token());
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.getPasswordResetTokenByHashToken(hashToken, Instant.now())
+                        .orElseThrow(()-> new InvalidPasswordResetTokenException("Invalid token, Please request for another one"));
+
+        User user = passwordResetToken.getUser();
+
+        String passwordHash = passwordEncoder.encode(request.newPassword());
+
+        user.setPassword(passwordHash);
+        userRepository.save(user);
+
+        passwordResetToken.setUsed(true);
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        userService.revokeAllSession(user);
+
+        authSessionService.addAccessToken(httpResponse, user.getEmail());
+        authSessionService.addRefreshToken(httpResponse, user.getEmail());
+
+        String to = user.getEmail();
+        String subject = "Password Changed";
+        String body = "Hi,\n" + user.getFullName() + " You Secure Team Api password is just changed.\nIf you didn't do this then contact with the Secure-Team Support Center\nThank You";
+
+        emailService.sendMail(
+                to,
+                subject,
+                body
+        );
+
+        return "Password Updated Successfully";
     }
 
     // ===================================================

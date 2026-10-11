@@ -1,9 +1,6 @@
 package com.chatokjunior.secureteamapi.auth;
 
-import com.chatokjunior.secureteamapi.auth.dto.CreateUserRequest;
-import com.chatokjunior.secureteamapi.auth.dto.CreateUserResponse;
-import com.chatokjunior.secureteamapi.auth.dto.ForgotPasswordRequest;
-import com.chatokjunior.secureteamapi.auth.dto.LoginUserRequest;
+import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.service.AuthService;
 import com.chatokjunior.secureteamapi.notification.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,8 +58,19 @@ public class AuthController {
         return ResponseEntity.ok(authService.forgotPassword(request));
     }
 
+    @PatchMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            HttpServletResponse httpResponse,
+
+            @RequestBody
+            @Valid
+            ResetPasswordRequest request
+    ) {
+        return ResponseEntity.ok(authService.resetPassword(httpResponse, request));
+    }
+
     @GetMapping("/test")
-    public Void resetPassword() {
+    public Void test() {
 
 //        emailService.sendMail(
 //                "sakib.0000.ansary@gmail.com",

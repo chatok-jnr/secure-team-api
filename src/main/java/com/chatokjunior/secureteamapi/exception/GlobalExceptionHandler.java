@@ -254,4 +254,16 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+
+
+    @ExceptionHandler(InvalidPasswordResetTokenException.class)
+    public ProblemDetail handleInvalidPasswordResetToken(
+            InvalidPasswordResetTokenException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid Token");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
 }

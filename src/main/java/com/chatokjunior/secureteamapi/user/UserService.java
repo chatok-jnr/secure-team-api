@@ -41,7 +41,7 @@ public class UserService {
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        String username = authentication.getName();
+     //   String username = authentication.getName();
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -158,20 +158,16 @@ public class UserService {
 
         userRepository.save(user);
 
-        List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByUser(user);
-
-        if(!refreshTokens.isEmpty()) {
-            for(RefreshToken refreshToken: refreshTokens) {
-                if(!refreshToken.isRevoked()) {
-                    refreshToken.setRevoked(true);
-                    refreshTokenRepository.save(refreshToken);
-                }
-            }
-        }
+        revokeAllSession(user);
 
         authSessionService.addAccessToken(httpResponse, user.getEmail());
         authSessionService.addRefreshToken(httpResponse, user.getEmail());
 
         return "Password updated successfully";
+    }
+
+    // Revoked RefreshToken
+    public void revokeAllSession(User user) {
+        refreshTokenRepository.deleteAllByUser(user);
     }
 }

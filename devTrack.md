@@ -63,7 +63,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 32 | Cookie hardening (SameSite, HttpOnly, Secure) | ✅ Done |
 | 33 | Account locking (failedLoginAttempts, accountNonLocked, lockedAt) | ✅ Done |
 | 34 | Forgot password | ✅ Done |
-| 35 | Reset password (revoke all refresh tokens) | ⬜ To Do |
+| 35 | Reset password (revoke all refresh tokens) | ✅ Done |
 | 36 | Session management: list and revoke sessions | ⬜ To Do |
 | 37 | Logout all | ⬜ To Do |
 | 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ⬜ To Do |
@@ -358,7 +358,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 35. Reset password (revoke all refresh tokens)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 12
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 12
 - **Endpoint:** `POST /api/auth/reset-password`
 - **Depends on:** User, RefreshToken
 - **Access:** Public (reset token)
@@ -367,7 +367,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 36. Session management: list and revoke sessions
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 13
+- **Status:**  |  **Priority:** Low  |  **Level:** 13
 - **Endpoint:** `GET /api/auth/sessions; DELETE /api/auth/sessions/{id}`
 - **Depends on:** RefreshToken
 - **Access:** Authenticated

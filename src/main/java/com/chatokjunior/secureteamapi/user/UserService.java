@@ -166,6 +166,10 @@ public class UserService {
         return "Password updated successfully";
     }
 
+    // =========================
+    // Helper Functions
+    // ===========================
+
     // Revoked RefreshToken
     public void revokeAllSession(User user) {
         refreshTokenRepository.deleteAllByUser(user);

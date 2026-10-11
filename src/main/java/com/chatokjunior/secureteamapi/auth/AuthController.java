@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -67,6 +68,15 @@ public class AuthController {
             ResetPasswordRequest request
     ) {
         return ResponseEntity.ok(authService.resetPassword(httpResponse, request));
+    }
+
+    @PostMapping("/logout-all")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> logoutAll(
+            HttpServletResponse httpResponse
+    ) {
+        authService.logoutAll(httpResponse);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/test")

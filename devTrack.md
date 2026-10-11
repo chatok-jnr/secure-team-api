@@ -65,7 +65,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 34 | Forgot password | ✅ Done |
 | 35 | Reset password (revoke all refresh tokens) | ✅ Done |
 | 36 | Session management: list and revoke sessions | ⬜ To Do |
-| 37 | Logout all | ⬜ To Do |
+| 37 | Logout all | ✅ Done |
 | 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ⬜ To Do |
 | 39 | Admin audit log | ⬜ To Do |
 
@@ -376,7 +376,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 37. Logout all
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 13
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 13
 - **Endpoint:** `POST /api/auth/logout-all`
 - **Depends on:** RefreshToken
 - **Access:** Authenticated

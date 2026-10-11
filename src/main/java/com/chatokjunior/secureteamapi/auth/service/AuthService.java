@@ -11,7 +11,6 @@ import com.chatokjunior.secureteamapi.notification.EmailService;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
 import com.chatokjunior.secureteamapi.user.UserService;
-import com.chatokjunior.secureteamapi.user.dto.ChangePasswordRequest;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -23,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -150,25 +150,7 @@ public class AuthService {
         }
 
 
-        Cookie accessTokenCookie = new Cookie("accessToken", "");
-
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);
-
-        response.addCookie(accessTokenCookie);
-
-
-        Cookie refreshTokenCookie = new Cookie("refreshToken", "");
-
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-
-        response.addCookie(refreshTokenCookie);
-
+        clearTokens(response);
     }
 
     @Transactional
@@ -242,6 +224,18 @@ public class AuthService {
         return "Password Updated Successfully";
     }
 
+    @Transactional
+    public void logoutAll(HttpServletResponse httpResponse) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails =  (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
+
+        userService.revokeAllSession(user);
+
+        clearTokens(httpResponse);
+    }
+
     // ===================================================
     // Helper Functions
     // ===================================================
@@ -263,5 +257,26 @@ public class AuthService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 not available", e);
         }
+    }
+
+    private void clearTokens(HttpServletResponse response) {
+        Cookie accessTokenCookie = new Cookie("accessToken", "");
+
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0);
+
+        response.addCookie(accessTokenCookie);
+
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", "");
+
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+
+        response.addCookie(refreshTokenCookie);
     }
 }

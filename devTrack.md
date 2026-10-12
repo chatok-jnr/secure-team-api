@@ -37,7 +37,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 06 | Refresh token rotation (validate A, revoke A, create B, issue new tokens) | ✅ Done |
 | 07 | Logout | ✅ Done |
 | 08 | Get my profile | ✅ Done |
-| 09 | Change my password (revoke existing sessions) | done |
+| 09 | Change my password (revoke existing sessions) | ✅ Done |
 | 10 | Account enabled/disabled behavior (enabled, accountNonLocked, failedLoginAttempts -> UserDetails) | ✅ Done |
 | 11 | Get all users | ✅ Done |
 | 12 | Get user by ID | ✅ Done |
@@ -57,14 +57,14 @@ Each feature is built only after everything it depends on already exists, so not
 | 26 | Manager dashboard | ✅ Done |
 | 27 | Admin dashboard | ✅ Done |
 | 28 | Method-level security (@EnableMethodSecurity, @PreAuthorize) | ✅ Done |
-| 29 | Permissions / authorities (USER_*, PROJECT_*) | ⬜ To Do |
+| 29 | Permissions / authorities (USER_*, PROJECT_*) | ✅ Done |
 | 30 | CSRF protection | ✅ Done |
 | 31 | CORS configuration (credentialed requests) | ✅ Done |
 | 32 | Cookie hardening (SameSite, HttpOnly, Secure) | ✅ Done |
 | 33 | Account locking (failedLoginAttempts, accountNonLocked, lockedAt) | ✅ Done |
 | 34 | Forgot password | ✅ Done |
 | 35 | Reset password (revoke all refresh tokens) | ✅ Done |
-| 36 | Session management: list and revoke sessions | ⬜ To Do |
+| 36 | Session management: list and revoke sessions | ✅ Done |
 | 37 | Logout all | ✅ Done |
 | 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ⬜ To Do |
 | 39 | Admin audit log | ⬜ To Do |
@@ -367,7 +367,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 36. Session management: list and revoke sessions
 
-- **Status:**  |  **Priority:** Low  |  **Level:** 13
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 13
 - **Endpoint:** `GET /api/auth/sessions; DELETE /api/auth/sessions/{id}`
 - **Depends on:** RefreshToken
 - **Access:** Authenticated

@@ -1,5 +1,6 @@
-package com.chatokjunior.secureteamapi.audit;
+package com.chatokjunior.secureteamapi.audit.services;
 
+import com.chatokjunior.secureteamapi.audit.AuditLogRepository;
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.audit.entity.AuditLog;
 import jakarta.servlet.http.HttpServletRequest;

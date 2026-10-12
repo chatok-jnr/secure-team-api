@@ -1,16 +1,14 @@
 package com.chatokjunior.secureteamapi.user;
 
-import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.services.AuditService;
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
-import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.dto.*;
-import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
@@ -191,6 +189,11 @@ public class UserService {
 
         userRepository.save(user);
 
+        revokeAllSession(user);
+
+        authSessionService.addAccessToken(httpResponse, user.getEmail());
+        authSessionService.addRefreshToken(httpResponse, user.getEmail());
+
         auditService.record(
                 AuditAction.PASSWORD_CHANGED,
                 user.getEmail(),
@@ -199,11 +202,6 @@ public class UserService {
                 "Password changed successfully",
                 null
         );
-
-        revokeAllSession(user);
-
-        authSessionService.addAccessToken(httpResponse, user.getEmail());
-        authSessionService.addRefreshToken(httpResponse, user.getEmail());
 
         return "Password updated successfully";
     }

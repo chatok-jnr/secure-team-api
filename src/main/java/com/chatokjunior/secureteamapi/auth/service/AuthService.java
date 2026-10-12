@@ -1,6 +1,6 @@
 package com.chatokjunior.secureteamapi.auth.service;
 
-import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.services.AuditService;
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.entity.PasswordResetToken;

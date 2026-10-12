@@ -53,6 +53,7 @@ Think of it as a small backend for a company where **who you are decides what yo
 - Java + Spring Boot
 - Spring Security
 - Spring Data JPA
+- PostgresSql
 - JWT
 - REST API
 
@@ -150,7 +151,7 @@ The build order, step by step:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/chatok-jnr/secure-team-api.git
 cd secureteamapi
 
 # 2. Configure your database and JWT secret in

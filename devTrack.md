@@ -67,7 +67,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 36 | Session management: list and revoke sessions | ✅ Done |
 | 37 | Logout all | ✅ Done |
 | 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ✅ Done |
-| 39 | Admin audit log | ⬜ To Do |
+| 39 | Admin audit log | ✅ Done |
 
 ## Security Foundation & Authentication
 
@@ -393,7 +393,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 39. Admin audit log
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 14
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 14
 - **Endpoint:** `GET /api/admin/audit-logs`
 - **Depends on:** Audit logging
 - **Access:** ADMIN

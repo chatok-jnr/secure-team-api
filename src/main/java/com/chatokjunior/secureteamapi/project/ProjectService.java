@@ -1,6 +1,6 @@
 package com.chatokjunior.secureteamapi.project;
 
-import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.services.AuditService;
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.*;
@@ -14,7 +14,6 @@ import com.chatokjunior.secureteamapi.project.repository.ProjectRepository;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectDetailsProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectMemberProjection;
 import com.chatokjunior.secureteamapi.project.repository.projection.ProjectResponseProjection;
-import com.chatokjunior.secureteamapi.project.dto.ProjectResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;

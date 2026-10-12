@@ -1,6 +1,8 @@
 package com.chatokjunior.secureteamapi.auth.service;
 
 import com.chatokjunior.secureteamapi.exception.AccountLockedException;
+import com.chatokjunior.secureteamapi.exception.EmailIsNotVerifiedException;
+import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,11 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         }
 
         handleSuccessfulLogin(userDetails);
+
+        User user = userDetails.getUser();
+        if(!user.getIsEmailVerified()) {
+            throw new EmailIsNotVerifiedException("Please verify your email first");
+        }
 
         return UsernamePasswordAuthenticationToken.authenticated(
                 userDetails,

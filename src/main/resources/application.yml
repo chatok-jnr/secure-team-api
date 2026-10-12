@@ -4,8 +4,8 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/secure_team
-    username: postgres
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
   jpa:
@@ -34,6 +34,8 @@ jwt:
   refresh-token-expiration: 604800000
 
 app:
+  otp:
+    secret: ${OTP_SECRET}
   security:
     password-reset-token-ttl: 10m
   mail:

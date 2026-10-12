@@ -266,4 +266,60 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+
+    @ExceptionHandler(EmailIsNotVerifiedException.class)
+    public ProblemDetail handleEmailIsNotVerifiedException(
+            EmailIsNotVerifiedException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problem.setTitle("Email is not verified");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+
+    @ExceptionHandler(OtpNotFoundException.class)
+    public ProblemDetail handleOtpNotFoundException(
+            OtpNotFoundException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Otp not found");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidOtpException.class)
+    public ProblemDetail handleInvalidOtpException(
+            InvalidOtpException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid OTP");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(EmailAlreadyVerifiedException.class)
+    public ProblemDetail handleEmailAlreadyVerifiedException(
+            EmailAlreadyVerifiedException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Email Already Verified");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(OtpAlreadyExistException.class)
+    public ProblemDetail handleOtpAlreadyExistException(
+            OtpAlreadyExistException ex
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("You previous OTP is Still valid");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
 }

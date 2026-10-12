@@ -25,12 +25,23 @@ Think of it as a small backend for a company where **who you are decides what yo
 
 ### Authentication
 - User registration and login
+- **Email verification with OTP**: new accounts must prove they own their email before they can use the platform
 - **JWT access + refresh tokens**, stored in cookies
 - **Refresh token rotation**: every refresh revokes the old token and issues a new one
 - Logout, and **logout from all devices**
 - Session management: list your active sessions and revoke any of them
 - Forgot password and reset password (reset revokes all sessions)
 - Change password (revokes existing sessions)
+
+### Email verification (OTP)
+- On registration the account is created with `isEmailVerified = false` and a **6-digit OTP** is emailed to the user
+- OTPs are generated with `SecureRandom` (not `Random`)
+- OTPs expire after **15 minutes** and are **single-use** (marked with `usedAt` once consumed)
+- OTPs are **never stored in plain text**: only an **HMAC-SHA256** hash is saved, keyed with a server-side secret (`app.otp.secret`). A plain SHA-256 hash of a 6-digit code could be brute-forced instantly if the database leaked
+- OTP hashes are compared in **constant time** (`MessageDigest.isEqual`)
+- Each OTP has a **type** (`EMAIL_VERIFICATION`, `TWO_FACTOR_AUTHENTICATION`), so a code issued for one purpose can't be used for another
+- Resend is blocked if the email is already verified or an active OTP already exists
+- After successful verification the user is signed in (access + refresh cookies are issued)
 
 ### Authorization
 - **Role-based access control** (ADMIN / MANAGER / EMPLOYEE)
@@ -53,8 +64,9 @@ Think of it as a small backend for a company where **who you are decides what yo
 - Java + Spring Boot
 - Spring Security
 - Spring Data JPA
-- PostgresSql
+- PostgreSQL
 - JWT
+- Email (OTP and notification emails)
 - REST API
 
 ---
@@ -64,15 +76,17 @@ Think of it as a small backend for a company where **who you are decides what yo
 ### Auth
 | Method | Endpoint | Access |
 |--------|----------|--------|
-| POST | `/api/auth/register` | Public |
-| POST | `/api/auth/login` | Public |
+| POST | `/api/auth/register` | Public (sends a verification OTP) |
+| POST | `/api/auth/verify-email` | Public (email + OTP) |
+| POST | `/api/auth/verify-email/resend?email=` | Public (sends a new OTP) |
+| POST | `/api/auth/login` | Public (verified email required) |
 | POST | `/api/auth/refresh` | Refresh cookie |
 | POST | `/api/auth/logout` | Authenticated |
 | POST | `/api/auth/logout-all` | Authenticated |
 | GET | `/api/auth/sessions` | Authenticated |
 | DELETE | `/api/auth/sessions/{id}` | Authenticated |
 | POST | `/api/auth/forgot-password` | Public |
-| POST | `/api/auth/reset-password` | Public (reset token) |
+| PATCH | `/api/auth/reset-password` | Public (reset token) |
 
 ### Users
 | Method | Endpoint | Access |
@@ -110,6 +124,25 @@ Think of it as a small backend for a company where **who you are decides what yo
 
 ---
 
+## Email verification flow
+
+```
+POST /api/auth/register
+  -> user saved with isEmailVerified = false
+  -> 6-digit OTP generated, HMAC-SHA256 hash saved, plain code emailed
+
+POST /api/auth/verify-email   { "email": "...", "otp": "048213" }
+  -> latest active OTP found (not used, not expired)
+  -> submitted code hashed and compared in constant time
+  -> OTP marked as used, user marked as verified, session cookies issued
+
+POST /api/auth/verify-email/resend?email=user@example.com
+  -> rejected if already verified or an active OTP exists
+  -> otherwise a new OTP is generated and emailed
+```
+
+---
+
 ## How the project was built
 
 Every feature was built **only after everything it depends on already existed**, so nothing had to be rewritten later.
@@ -144,6 +177,7 @@ The build order, step by step:
 7. **Authorization hardening**: method security, permissions, CSRF, CORS, cookie hardening
 8. **Advanced account security**: account locking, forgot/reset password, session management
 9. **Auditing**: audit logging and admin audit log
+10. **Email verification**: OTP generation, HMAC hashing, verify and resend flow
 
 ---
 
@@ -152,10 +186,11 @@ The build order, step by step:
 ```bash
 # 1. Clone the repository
 git clone https://github.com/chatok-jnr/secure-team-api.git
-cd secureteamapi
+cd secure-team-api
 
-# 2. Configure your database and JWT secret in
+# 2. Configure your database, JWT secret, OTP secret and mail settings in
 #    src/main/resources/application.properties
+#    (load secrets from environment variables, never commit them)
 
 # 3. Run the app
 ./mvnw spring-boot:run
@@ -173,6 +208,7 @@ The API will start on `http://localhost:8080`.
 - Role-based vs. permission-based vs. object-level authorization
 - Defending against CSRF, misconfigured CORS, and insecure cookies
 - Building account protections: locking, session revocation, password reset
+- Email verification with OTPs: why a short code needs a keyed hash (HMAC) instead of plain SHA-256, and why `SecureRandom` and constant-time comparison matter
 
 ---
 

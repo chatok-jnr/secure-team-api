@@ -7,6 +7,8 @@ import com.chatokjunior.secureteamapi.notification.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,27 @@ public class AuthController {
             CreateUserRequest req
     ) {
         return ResponseEntity.ok(authService.createUser(req));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> emailVerification(
+            HttpServletResponse httpResponse,
+            @Valid
+            @RequestBody
+            EmailVerificationRequest request
+    ) {
+        authService.verifyEmail(request, httpResponse);
+        return ResponseEntity.ok("Email Verificaiton Successfull");
+    }
+
+    @PostMapping("/verify-email/resend")
+    public ResponseEntity<String> reqForEmailVerification(
+            @RequestParam
+            @Email
+            String email
+    ) {
+        authService.resendEmailVerificationOtp(email);
+        return ResponseEntity.ok("An Otp code has been sen to your email");
     }
 
     @PostMapping("/login")

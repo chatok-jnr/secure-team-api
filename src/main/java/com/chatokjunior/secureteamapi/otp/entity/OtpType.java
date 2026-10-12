@@ -1,4 +1,4 @@
-package com.chatokjunior.secureteamapi.otp;
+package com.chatokjunior.secureteamapi.otp.entity;
 
 public enum OtpType {
     EMAIL_VERIFICATION,

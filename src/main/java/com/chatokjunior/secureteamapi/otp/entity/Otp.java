@@ -1,4 +1,4 @@
-package com.chatokjunior.secureteamapi.otp;
+package com.chatokjunior.secureteamapi.otp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,10 +21,6 @@ public class Otp {
 
     @Column(name = "email", nullable = false)
     private String email;
-
-    @Column(name = "is_verified")
-    @Builder.Default
-    private Boolean isVerified = false;
 
     @Column(name = "otp_hash")
     private String otpHash;

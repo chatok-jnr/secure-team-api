@@ -5,11 +5,12 @@ import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.entity.PasswordResetToken;
 import com.chatokjunior.secureteamapi.auth.repository.PasswordResetTokenRepository;
-import com.chatokjunior.secureteamapi.exception.InvalidPasswordResetTokenException;
-import com.chatokjunior.secureteamapi.exception.InvalidRefreshTokenException;
-import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
-import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.notification.EmailService;
+import com.chatokjunior.secureteamapi.otp.OtpRepository;
+import com.chatokjunior.secureteamapi.otp.OtpService;
+import com.chatokjunior.secureteamapi.otp.entity.Otp;
+import com.chatokjunior.secureteamapi.otp.entity.OtpType;
 import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenService;
 import com.chatokjunior.secureteamapi.user.UserService;
@@ -26,6 +27,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +56,9 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AuthSessionService authSessionService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final OtpService otpService;
     private final AuditService auditService;
+    private final OtpRepository otpRepository;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -75,6 +79,8 @@ public class AuthService {
 
         User newUser = userRepository.save(user);
 
+        otpService.createOtp(user.getEmail(), OtpType.EMAIL_VERIFICATION);
+
         auditService.record(
                 AuditAction.USER_CREATED,
                 newUser.getEmail(),
@@ -91,6 +97,48 @@ public class AuthService {
                 .role(newUser.getRole())
                 .enabled(newUser.isEnabled())
                 .build();
+    }
+
+    @Transactional
+    public void verifyEmail(EmailVerificationRequest request, HttpServletResponse httpResponse) {
+
+        Otp otp = otpRepository.findActiveOtp(request.email(), OtpType.EMAIL_VERIFICATION, Instant.now())
+                .orElseThrow(() -> new OtpNotFoundException("Please request for a new otp"));
+
+        boolean isMatch = otpService.hashMatches(request.otp(), otp.getOtpHash());
+
+        IO.println("\n");
+        IO.println(request.otp());
+        IO.println(isMatch + "\n");
+
+        if(!isMatch) throw new InvalidOtpException("Your OTP is Incorrect");
+
+        otp.setUsedAt(Instant.now());
+        otpRepository.save(otp);
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user.setIsEmailVerified(true);
+        userRepository.save(user);
+
+        authSessionService.addAccessToken(httpResponse, request.email());
+        authSessionService.addRefreshToken(httpResponse, request.email());
+    }
+
+    @Transactional
+    public void resendEmailVerificationOtp(
+            String email
+    ) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("You entered and Invalid email address"));
+
+        if(user.getIsEmailVerified()) throw new EmailAlreadyVerifiedException("this email is already verified");
+
+        boolean existActiveOtp = otpRepository.existActiveOtp(email, Instant.now(), OtpType.EMAIL_VERIFICATION);
+        if(existActiveOtp) throw new OtpAlreadyExistException("");
+
+        otpService.createOtp(email, OtpType.EMAIL_VERIFICATION);
     }
 
     public void login(

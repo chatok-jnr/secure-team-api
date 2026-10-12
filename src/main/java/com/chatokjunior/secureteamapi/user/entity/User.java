@@ -39,6 +39,9 @@ public class User {
     @Column (nullable = false, unique = true)
     private String email;
 
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified;
+
     @Column (nullable = false)
     private String password;
 

@@ -232,7 +232,7 @@ public class ProjectService {
         return CreateProjectResponse.builder()
                 .id(updatedProject.getId())
                 .name(updatedProject.getName())
-                .description(updatedProject.getName())
+                .description(updatedProject.getDescription())
                 .status(updatedProject.getStatus())
                 .managerId(updatedProject.getManager().getId())
                 .createdAt(updatedProject.getCreatedAt())

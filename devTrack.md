@@ -66,7 +66,7 @@ Each feature is built only after everything it depends on already exists, so not
 | 35 | Reset password (revoke all refresh tokens) | ✅ Done |
 | 36 | Session management: list and revoke sessions | ✅ Done |
 | 37 | Logout all | ✅ Done |
-| 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ⬜ To Do |
+| 38 | Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*) | ✅ Done |
 | 39 | Admin audit log | ⬜ To Do |
 
 ## Security Foundation & Authentication
@@ -387,7 +387,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 38. Audit logging (LOGIN_*, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGED, ROLE_CHANGED, ACCOUNT_DISABLED, PROJECT_*)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 14
+- **Status:** ✅ Done  |  **Priority:** Low  |  **Level:** 14
 - **Depends on:** Auth, User, Project modules
 - **Blocked by:** #27
 

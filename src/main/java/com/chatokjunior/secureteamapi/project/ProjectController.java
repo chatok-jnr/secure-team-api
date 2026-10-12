@@ -26,7 +26,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping("/")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAuthority('PROJECT_CREATE')")
     public ResponseEntity<CreateProjectResponse> createProject(
             @RequestBody
             @Valid
@@ -36,7 +36,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{projectId}/members/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAuthority('PROJECT_ADD_MEMBER')")
     public ResponseEntity<String> addProjectMember(
             @PathVariable("projectId")
             UUID projectId,
@@ -47,7 +47,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{projectId}/members/{memberId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAuthority('PROJECT_REMOVE_MEMBER')")
     public ResponseEntity<String> removeProjectMember(
             @PathVariable("projectId")
             UUID projectId,
@@ -85,7 +85,7 @@ public class ProjectController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAuthorith('PROJECT_UPDATE')")
     public ResponseEntity<CreateProjectResponse> updateProject(
             @PathVariable("id")
             UUID id,

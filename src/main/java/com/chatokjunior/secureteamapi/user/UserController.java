@@ -65,6 +65,7 @@ public class UserController {
     }
 
     @PatchMapping("/password")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changePassword(
             @RequestBody
             @Valid
@@ -75,6 +76,7 @@ public class UserController {
     }
 
     @GetMapping ()
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetAllUsersDto>> getUsers(
             @RequestParam(defaultValue = "0")
             int page,
@@ -87,6 +89,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<GetUserDetailsDto> getUser(
             @PathVariable
             UUID id

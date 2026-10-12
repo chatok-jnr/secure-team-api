@@ -317,7 +317,7 @@ Each feature is built only after everything it depends on already exists, so not
 
 ### 29. Permissions / authorities (USER_*, PROJECT_*)
 
-- **Status:** ⬜ To Do  |  **Priority:** Low  |  **Level:** 10
+- **Status:** ✅ Done |  **Priority:** Low  |  **Level:** 10
 - **Depends on:** Method-level security, Role system
 - **Blocked by:** #28
 

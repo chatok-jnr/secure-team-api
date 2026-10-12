@@ -80,6 +80,7 @@ public class AuthController {
     }
 
     @GetMapping("/test")
+    @PreAuthorize("hasAuthority('USER_DELETE')")
     public Void test() {
 
 //        emailService.sendMail(

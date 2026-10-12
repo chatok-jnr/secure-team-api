@@ -125,6 +125,7 @@ public class AuthService {
         refreshTokenService.revokeRefreshToken(rawToken);
 
         authSessionService.addAccessToken(response, refreshToken.getUser().getEmail());
+        authSessionService.addRefreshToken(response, refreshToken.getUser().getEmail());
     }
 
     public void logout(

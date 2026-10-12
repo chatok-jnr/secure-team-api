@@ -1,5 +1,7 @@
 package com.chatokjunior.secureteamapi.project;
 
+import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.*;
 import com.chatokjunior.secureteamapi.project.dto.CreateProjectRequest;
@@ -34,6 +36,7 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final AuditService auditService;
 
     @Transactional
     public CreateProjectResponse createProject(CreateProjectRequest request) {
@@ -48,7 +51,14 @@ public class ProjectService {
         Project newProject = projectRepository.save(project);
         projectRepository.flush();
 
-        System.out.println(newProject.getCreatedAt());
+        auditService.record(
+                AuditAction.PROJECT_CREATED,
+                manager.getEmail(),
+                "PROJECT",
+                newProject.getId().toString(),
+                "Project created: " + newProject.getName(),
+                null
+        );
 
         CreateProjectResponse response = CreateProjectResponse.builder()
                 .id(newProject.getId())
@@ -88,6 +98,15 @@ public class ProjectService {
 
         projectMemberRepository.save(projectMember);
 
+        auditService.record(
+                AuditAction.PROJECT_MEMBER_ADDED,
+                currentUser.getEmail(),
+                "PROJECT",
+                project.getId().toString(),
+                "Member " + member.getId() + " added to project",
+                null
+        );
+
         return "Member Added Successfully";
     }
 
@@ -109,6 +128,15 @@ public class ProjectService {
                 .orElseThrow(() -> new ProjectMemberNotFoundException("This User Is Not A Member Of This Project"));
 
         projectMemberRepository.delete(projectMember);
+
+        auditService.record(
+                AuditAction.PROJECT_MEMBER_REMOVED,
+                currentUser.getEmail(),
+                "PROJECT",
+                project.getId().toString(),
+                "Member " + member.getId() + " removed from project",
+                null
+        );
 
         return "Member is Removed Successfully From this Project";
     }
@@ -192,6 +220,15 @@ public class ProjectService {
 
         Project updatedProject = projectRepository.save(project);
 
+        auditService.record(
+                AuditAction.PROJECT_UPDATED,
+                currentUser.getEmail(),
+                "PROJECT",
+                updatedProject.getId().toString(),
+                "Project updated: " + updatedProject.getName(),
+                null
+        );
+
         return CreateProjectResponse.builder()
                 .id(updatedProject.getId())
                 .name(updatedProject.getName())
@@ -203,14 +240,22 @@ public class ProjectService {
     }
 
     @Transactional
-    public Void deleteProjectById(UUID id) {
+    public void deleteProjectById(UUID id) {
+        User currentUser = currentUser();
 
         Project project = projectRepository.findById(id)
-                        .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
+                .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
+
+        auditService.record(
+                AuditAction.PROJECT_DELETED,
+                currentUser.getEmail(),
+                "PROJECT",
+                project.getId().toString(),
+                "Project deleted: " + project.getName(),
+                null
+        );
 
         projectRepository.delete(project);
-
-        return null;
     }
 
     // =========================

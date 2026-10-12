@@ -171,7 +171,11 @@ public class UserService {
     // ===========================
 
     // Revoked RefreshToken
+    @Transactional
     public void revokeAllSession(User user) {
-        refreshTokenRepository.deleteAllByUser(user);
+        List<RefreshToken> sessions =
+                refreshTokenRepository.findAllByUser(user);
+
+        sessions.forEach(session -> session.setRevoked(true));
     }
 }

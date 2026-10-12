@@ -2,6 +2,7 @@ package com.chatokjunior.secureteamapi.auth;
 
 import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.service.AuthService;
+import com.chatokjunior.secureteamapi.auth.service.SessionService;
 import com.chatokjunior.secureteamapi.notification.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,7 +10,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -18,6 +23,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailService emailService;
+    private final SessionService sessionService;
 
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponse> createNewUser(
@@ -76,6 +82,26 @@ public class AuthController {
             HttpServletResponse httpResponse
     ) {
         authService.logoutAll(httpResponse);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/sessions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<SessionResponse>> getSessions(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                sessionService.getSessions(authentication.getName())
+        );
+    }
+
+    @DeleteMapping("/sessions/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> revokeSession(
+            @PathVariable UUID id,
+            Authentication authentication
+    ) {
+        sessionService.revokeSession(authentication.getName(), id);
         return ResponseEntity.noContent().build();
     }
 

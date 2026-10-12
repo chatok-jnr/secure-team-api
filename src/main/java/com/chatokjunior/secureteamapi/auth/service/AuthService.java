@@ -75,6 +75,15 @@ public class AuthService {
 
         User newUser = userRepository.save(user);
 
+        auditService.record(
+                AuditAction.USER_CREATED,
+                newUser.getEmail(),
+                "USER",
+                newUser.getId().toString(),
+                "User account created",
+                null
+        );
+
         return CreateUserResponse.builder()
                 .id(newUser.getId())
                 .fullName(newUser.getFullName())
@@ -263,6 +272,11 @@ public class AuthService {
         passwordResetToken.setUsed(true);
         passwordResetTokenRepository.save(passwordResetToken);
 
+        userService.revokeAllSession(user);
+
+        authSessionService.addAccessToken(httpResponse, user.getEmail());
+        authSessionService.addRefreshToken(httpResponse, user.getEmail());
+
         auditService.record(
                 AuditAction.PASSWORD_RESET,
                 user.getEmail(),
@@ -271,11 +285,6 @@ public class AuthService {
                 "Password reset completed",
                 null
         );
-
-        userService.revokeAllSession(user);
-
-        authSessionService.addAccessToken(httpResponse, user.getEmail());
-        authSessionService.addRefreshToken(httpResponse, user.getEmail());
 
         String to = user.getEmail();
         String subject = "Password Changed";
@@ -300,6 +309,15 @@ public class AuthService {
         userService.revokeAllSession(user);
 
         clearTokens(httpResponse);
+
+        auditService.record(
+                AuditAction.LOGOUT_ALL,
+                user.getEmail(),
+                "USER",
+                user.getId().toString(),
+                "All user sessions revoked",
+                null
+        );
     }
 
     // ===================================================

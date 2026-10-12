@@ -1,5 +1,7 @@
 package com.chatokjunior.secureteamapi.user;
 
+import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetails;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
@@ -34,14 +36,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthSessionService authSessionService;
+    private final AuditService auditService;
 
     @Transactional
     public CreateUserResponse createNewUser(CreateUserRequest request) {
-
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-     //   String username = authentication.getName();
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -60,6 +58,15 @@ public class UserService {
 
         User newUser = userRepository.save(user);
 
+        auditService.record(
+                AuditAction.USER_CREATED,
+                SecurityContextHolder.getContext().getAuthentication().getName(),
+                "USER",
+                newUser.getId().toString(),
+                "User account created",
+                null
+        );
+
         CreateUserResponse newUserResponse = CreateUserResponse.builder()
                 .id(newUser.getId())
                 .fullName(newUser.getFullName())
@@ -74,17 +81,24 @@ public class UserService {
     }
 
     @Transactional
-    public Void updateUserRole(UUID id, RoleUpdateRequest request) {
+    public void updateUserRole(UUID id, RoleUpdateRequest request) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if(user.getRole().equals(request.getRole())) return null;
+        if(user.getRole().equals(request.getRole())) return;
 
         user.setRole(request.getRole());
         userRepository.save(user);
 
-        return null;
+        auditService.record(
+                AuditAction.ROLE_CHANGED,
+                SecurityContextHolder.getContext().getAuthentication().getName(),
+                "USER",
+                user.getId().toString(),
+                "Role changed to " + user.getRole().name(),
+                null
+        );
     }
 
     public String disableUserById(UUID id) {
@@ -95,11 +109,30 @@ public class UserService {
             user.setEnabled(false);
             userRepository.save(user);
 
+            auditService.record(
+                    AuditAction.ACCOUNT_DISABLED,
+                    SecurityContextHolder.getContext().getAuthentication().getName(),
+                    "USER",
+                    user.getId().toString(),
+                    "User account disabled",
+                    null
+            );
+
             return "User Has Been Disable Successfully";
         }
 
         user.setEnabled(true);
         userRepository.save(user);
+
+        auditService.record(
+                AuditAction.ACCOUNT_ENABLED,
+                SecurityContextHolder.getContext().getAuthentication().getName(),
+                "USER",
+                user.getId().toString(),
+                "User account enabled",
+                null
+        );
+
         return "User Has been Enable Successfully";
     }
 
@@ -157,6 +190,15 @@ public class UserService {
         user.setPassword(hashedPassword);
 
         userRepository.save(user);
+
+        auditService.record(
+                AuditAction.PASSWORD_CHANGED,
+                user.getEmail(),
+                "USER",
+                user.getId().toString(),
+                "Password changed successfully",
+                null
+        );
 
         revokeAllSession(user);
 

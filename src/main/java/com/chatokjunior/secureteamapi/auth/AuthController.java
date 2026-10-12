@@ -35,12 +35,11 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(
-            @RequestBody
-            @Valid
-            LoginUserRequest request,
+            @RequestBody @Valid LoginUserRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
-        authService.login(request, response);
+        authService.login(request, httpRequest, response);
         return ResponseEntity.ok("Login Successful");
     }
 

@@ -1,5 +1,7 @@
 package com.chatokjunior.secureteamapi.auth.service;
 
+import com.chatokjunior.secureteamapi.audit.AuditService;
+import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.auth.dto.*;
 import com.chatokjunior.secureteamapi.auth.entity.PasswordResetToken;
 import com.chatokjunior.secureteamapi.auth.repository.PasswordResetTokenRepository;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,6 +54,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AuthSessionService authSessionService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final AuditService auditService;
 
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
@@ -82,19 +86,44 @@ public class AuthService {
 
     public void login(
             LoginUserRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        Authentication authentication;
+
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex) {
+            auditService.record(
+                    AuditAction.LOGIN_FAILURE,
+                    request.getEmail(),
+                    "USER",
+                    null,
+                    "Authentication failed",
+                    httpRequest
+            );
+
+            throw ex;
+        }
 
         String username = authentication.getName();
 
         authSessionService.addAccessToken(httpResponse, username);
         authSessionService.addRefreshToken(httpResponse, username);
+
+        auditService.record(
+                AuditAction.LOGIN_SUCCESS,
+                username,
+                "USER",
+                null,
+                "Authentication succeeded",
+                httpRequest
+        );
     }
 
     public void refresh(HttpServletRequest request, HttpServletResponse response) {
@@ -126,6 +155,15 @@ public class AuthService {
 
         authSessionService.addAccessToken(response, refreshToken.getUser().getEmail());
         authSessionService.addRefreshToken(response, refreshToken.getUser().getEmail());
+
+        auditService.record(
+                AuditAction.TOKEN_REFRESH,
+                refreshToken.getUser().getEmail(),
+                "USER",
+                refreshToken.getUser().getId().toString(),
+                "Refresh token rotated",
+                request
+        );
     }
 
     public void logout(
@@ -152,6 +190,24 @@ public class AuthService {
 
 
         clearTokens(response);
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String actorEmail = authentication != null
+                && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())
+                ? authentication.getName()
+                : null;
+
+        auditService.record(
+                AuditAction.LOGOUT,
+                actorEmail,
+                "USER",
+                null,
+                "User logged out",
+                request
+        );
     }
 
     @Transactional
@@ -206,6 +262,15 @@ public class AuthService {
 
         passwordResetToken.setUsed(true);
         passwordResetTokenRepository.save(passwordResetToken);
+
+        auditService.record(
+                AuditAction.PASSWORD_RESET,
+                user.getEmail(),
+                "USER",
+                user.getId().toString(),
+                "Password reset completed",
+                null
+        );
 
         userService.revokeAllSession(user);
 

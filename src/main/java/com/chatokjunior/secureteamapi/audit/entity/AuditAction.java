@@ -1,0 +1,22 @@
+package com.chatokjunior.secureteamapi.audit.entity;
+
+public enum AuditAction {
+    LOGIN_SUCCESS,
+    LOGIN_FAILURE,
+    LOGOUT,
+    TOKEN_REFRESH,
+
+    PASSWORD_CHANGED,
+    PASSWORD_RESET,
+
+    USER_CREATED,
+    ROLE_CHANGED,
+    ACCOUNT_DISABLED,
+    ACCOUNT_ENABLED,
+
+    PROJECT_CREATED,
+    PROJECT_UPDATED,
+    PROJECT_DELETED,
+    PROJECT_MEMBER_ADDED,
+    PROJECT_MEMBER_REMOVED
+}

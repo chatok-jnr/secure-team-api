@@ -4,6 +4,8 @@ import com.chatokjunior.secureteamapi.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,6 +27,7 @@ public class PasswordResetToken {
 
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(name = "is_used")

@@ -97,6 +97,4 @@ public class OtpService {
                 storedHash.getBytes(StandardCharsets.UTF_8));
     }
 
-
-
 }

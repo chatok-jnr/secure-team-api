@@ -107,10 +107,6 @@ public class AuthService {
 
         boolean isMatch = otpService.hashMatches(request.otp(), otp.getOtpHash());
 
-        IO.println("\n");
-        IO.println(request.otp());
-        IO.println(isMatch + "\n");
-
         if(!isMatch) throw new InvalidOtpException("Your OTP is Incorrect");
 
         otp.setUsedAt(Instant.now());
@@ -130,8 +126,11 @@ public class AuthService {
     public void resendEmailVerificationOtp(
             String email
     ) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("You entered and Invalid email address"));
+
+        System.out.println("No i can't reach till here");
 
         if(user.getIsEmailVerified()) throw new EmailAlreadyVerifiedException("this email is already verified");
 

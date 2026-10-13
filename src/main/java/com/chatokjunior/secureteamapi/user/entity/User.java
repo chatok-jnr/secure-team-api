@@ -40,7 +40,8 @@ public class User {
     private String email;
 
     @Column(name = "is_email_verified")
-    private Boolean isEmailVerified;
+    @Builder.Default
+    private Boolean isEmailVerified = false;
 
     @Column (nullable = false)
     private String password;

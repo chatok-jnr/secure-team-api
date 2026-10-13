@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +29,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponse> createNewUser(
             @RequestBody
+            @Valid
             CreateUserRequest req
     ) {
         return ResponseEntity.ok(authService.createUser(req));

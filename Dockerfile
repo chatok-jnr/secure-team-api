@@ -1,4 +1,4 @@
-# Stage 1: Build the sprign boot application
+# Stage 1: Build the spring boot application
 FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /workspace
@@ -20,20 +20,29 @@ COPY src/ src/
 RUN ./mvnw -B -DskipTests package
 
 RUN set -eux; \
-    JAR="$(find target -maxdepth 1 -type f --name '*.jar' ! -name '*.original' | head -n 1)"; \
+    JAR="$(find target -maxdepth 1 -type f -name '*.jar' ! -name '*.original' | head -n 1)"; \
     test -n "$JAR"; \
     cp "$JAR" /workspace/app.jar
 
 
-# Stage 2: Run the application \
+# Stage 2: Run the application
 FROM eclipse-temurin:25-jre
 
-WORKDIR /app
+# Install trusted CA certificated adn timezone data
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
-# Run as a non-root user
+# Create a non-root application user and give it ownership of /app
 RUN groupadd --system app \
     && useradd --system --gid app --home-dir /app \
-        --shell /user/sbin/nologin app
+        --shell /usr/sbin/nologin app \
+    && mkdir -p /app \
+    && chown app:app /app
+
+WORKDIR /app
 
 COPY --from=build --chown=app:app /workspace/app.jar app.jar
 

@@ -129,9 +129,7 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("You entered and Invalid email address"));
-
-        System.out.println("No i can't reach till here");
-
+        
         if(user.getIsEmailVerified()) throw new EmailAlreadyVerifiedException("this email is already verified");
 
         boolean existActiveOtp = otpRepository.existActiveOtp(email, Instant.now(), OtpType.EMAIL_VERIFICATION);

@@ -2,6 +2,7 @@ package com.chatokjunior.secureteamapi;
 
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.audit.services.AuditService;
+import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -89,5 +91,19 @@ public class UserServiceTest {
                 anyString(),
                 isNull()
         );
+    }
+
+    @Test
+    void createNewUser_whenEmailExists_throwsAndDoesNotSave() {
+        CreateUserRequest request = CreateUserRequest.builder()
+                .fullName("Chatok Junior")
+                .email("chatok@test.com")
+                .password("plain123")
+                .build();
+
+        when(userRepository.existsByEmail("chatok@test.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.createNewUser(request))
+                .isInstanceOf(UserAlreadyExistsException.class);
     }
 }

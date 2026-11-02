@@ -28,8 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -105,5 +104,8 @@ public class UserServiceTest {
 
         assertThatThrownBy(() -> userService.createNewUser(request))
                 .isInstanceOf(UserAlreadyExistsException.class);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(auditService);
     }
 }

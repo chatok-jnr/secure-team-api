@@ -13,6 +13,7 @@ import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -179,5 +181,20 @@ public class UserServiceTest {
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditService);
+    }
+
+    // getUserById
+    @Test
+    void getUserBYId_whenUserIsFound_returnsUserDetails() {
+        UUID id = UUID.randomUUID();
+        GetUserDetailsDto response = new GetUserDetailsDto(id, "Chatok Junior", "chatok@test.com", Role.EMPLOYEE,
+                true, true, Instant.now(), Instant.now());
+
+        when(userRepository.getUserById(id)).thenReturn(Optional.of(response));
+
+        GetUserDetailsDto user = userService.getUserBYId(id);
+
+        assertThat(user).isSameAs(response);
+        verify(userRepository).getUserById(id);
     }
 }

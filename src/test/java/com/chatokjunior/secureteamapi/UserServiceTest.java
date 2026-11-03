@@ -5,6 +5,7 @@ import com.chatokjunior.secureteamapi.audit.services.AuditService;
 import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
+import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.user.dto.*;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
@@ -336,6 +337,53 @@ public class UserServiceTest {
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(authSessionService, auditService);
+    }
+
+    @Test
+    void changePassword_whenCurrentPasswordIsCorrect_updatesPasswordRevokesSessionsAndIssuesNewTokens() {
+
+        // Arrange
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setCurrentPassword("oldPass");
+        request.setNewPassword("newPass");
+
+        UUID id = UUID.randomUUID();
+
+        User user = User.builder()
+                .id(id)
+                .email("admin@test.com")
+                .password("oldHash")
+                .build();
+
+        RefreshToken token1 = new RefreshToken();
+        RefreshToken token2 = new RefreshToken();
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("oldPass", "oldHash")).thenReturn(true);
+        when(passwordEncoder.encode("newPass")).thenReturn("newHash");
+        when(refreshTokenRepository.findAllByUser(user)).thenReturn(List.of(token1, token2));
+
+        // Act
+        String result = userService.changePassword(response, request);
+
+        assertThat(result).isEqualTo("Password updated successfully");
+        assertThat(user.getPassword()).isEqualTo("newHash");
+        assertThat(token1.isRevoked()).isTrue();
+        assertThat(token2.isRevoked()).isTrue();
+
+        verify(userRepository).save(user);
+        verify(authSessionService).addAccessToken(response, "admin@test.com");
+        verify(authSessionService).addRefreshToken(response, "admin@test.com");
+        verify(auditService).record(
+                eq(AuditAction.PASSWORD_CHANGED),
+                eq("admin@test.com"),
+                eq("USER"),
+                eq(id.toString()),
+                eq("Password changed successfully"),
+                isNull()
+        );
     }
 
 }

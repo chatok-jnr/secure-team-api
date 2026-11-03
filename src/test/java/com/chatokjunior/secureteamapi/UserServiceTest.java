@@ -160,4 +160,24 @@ public class UserServiceTest {
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditService);
     }
+
+    @Test
+    void updateUserRole_whenRoleIsSame_doesNotSaveOrAudit() {
+        UUID id = UUID.randomUUID();
+
+        RoleUpdateRequest request = new RoleUpdateRequest();
+        request.setRole(Role.EMPLOYEE);
+
+        User user = User.builder()
+                .id(id)
+                .role(Role.EMPLOYEE)
+                .build();
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        userService.updateUserRole(id, request);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(auditService);
+    }
 }

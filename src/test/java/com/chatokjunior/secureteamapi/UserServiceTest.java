@@ -9,6 +9,7 @@ import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.UserService;
+import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
 import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -62,7 +64,7 @@ public class UserServiceTest {
 
     // Test Methods ------------------------------------------------
 
-    // Create new User
+    // createNewUser
     @Test
     void createNewUser_whenEmailIsNew_savesUserAndReturnResponse() {
         // Arrange
@@ -118,7 +120,7 @@ public class UserServiceTest {
         verifyNoInteractions(auditService);
     }
 
-    // Update User Role
+    // updateUserRole
     @Test
     void updateUserRole_whenRoleIsDifferent_savesUserAndRecordsAudit() {
         UUID id = UUID.randomUUID();
@@ -233,7 +235,7 @@ public class UserServiceTest {
         );
 
         assertThat(user.isEnabled()).isFalse();
-        verify(userRepository).save(any());
+        verify(userRepository).save(user);
         assertThat(res).isEqualTo("User Has Been Disable Successfully");
     }
 
@@ -259,7 +261,7 @@ public class UserServiceTest {
         );
 
         assertThat(user.isEnabled()).isTrue();
-        verify(userRepository).save(any());
+        verify(userRepository).save(user);
         assertThat(res).isEqualTo("User Has been Enable Successfully");
     }
 
@@ -275,4 +277,29 @@ public class UserServiceTest {
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditService);
     }
+
+    // myProfile
+    @Test
+    void myProfile_whenUserExists_returnsMyProfileResponse() {
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken("chatok@test.com", null, List.of());
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .fullName("Chatok Junior")
+                .email("chatok@test.com")
+                .role(Role.EMPLOYEE)
+                .build();
+
+        when(userRepository.findByEmail(authentication.getName())).thenReturn(Optional.of(user));
+
+        MyProfileResponse response = userService.myProfile(authentication);
+
+        assertThat(response.getEmail()).isEqualTo(authentication.getName());
+        assertThat(user.getId()).isEqualTo(response.getId());
+        assertThat(user.getFullName()).isEqualTo(response.getFullName());
+        assertThat(user.getRole()).isEqualTo(response.getRole());
+
+        verify(userRepository).findByEmail(authentication.getName());
+    }
+
 }

@@ -294,12 +294,22 @@ public class UserServiceTest {
 
         MyProfileResponse response = userService.myProfile(authentication);
 
-        assertThat(response.getEmail()).isEqualTo(authentication.getName());
-        assertThat(user.getId()).isEqualTo(response.getId());
-        assertThat(user.getFullName()).isEqualTo(response.getFullName());
-        assertThat(user.getRole()).isEqualTo(response.getRole());
+        assertThat(response.getId()).isEqualTo(user.getId());
+        assertThat(response.getFullName()).isEqualTo("Chatok Junior");
+        assertThat(response.getRole()).isEqualTo(Role.EMPLOYEE);
+        assertThat(response.getEmail()).isEqualTo("chatok@test.com");
 
         verify(userRepository).findByEmail(authentication.getName());
+    }
+
+    @Test
+    void myProfile_whenUserDoesNotExist_throwsUserNotFoundException() {
+        Authentication authentication = new UsernamePasswordAuthenticationToken("chatok@test.com", null, List.of());
+        when(userRepository.findByEmail(authentication.getName())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.myProfile(authentication))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with this email not found: chatok@test.com");
     }
 
 }

@@ -262,4 +262,17 @@ public class UserServiceTest {
         verify(userRepository).save(any());
         assertThat(res).isEqualTo("User Has been Enable Successfully");
     }
+
+    @Test
+    void disableUserById_whenUserNotFound_throwsUserNotFoundException() {
+        UUID id = UUID.randomUUID();
+
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.disableUserById(id))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(auditService);
+    }
 }

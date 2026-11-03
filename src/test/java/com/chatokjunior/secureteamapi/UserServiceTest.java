@@ -3,11 +3,13 @@ package com.chatokjunior.secureteamapi;
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.audit.services.AuditService;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
+import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.UserService;
+import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -23,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -107,5 +110,33 @@ public class UserServiceTest {
 
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditService);
+    }
+
+    @Test
+    void updateUserRole_whenRoleIsDifferent_savesUserAndRecordsAudit() {
+        UUID id = UUID.randomUUID();
+        User user = User.builder()
+                .id(id)
+                .role(Role.EMPLOYEE)
+                .build();
+
+        RoleUpdateRequest request = new RoleUpdateRequest();
+        request.setRole(Role.MANAGER);
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        userService.updateUserRole(id, request);
+
+        assertThat(user.getRole()).isEqualTo(Role.MANAGER);
+        verify(userRepository).save(user);
+        verify(auditService).record(
+                eq(AuditAction.ROLE_CHANGED),
+                eq("admin@test.com"),
+                eq("USER"),
+                eq(id.toString()),
+                eq("Role changed to MANAGER"),
+                isNull()
+        );
+
     }
 }

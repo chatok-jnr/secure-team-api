@@ -99,6 +99,7 @@ public class UserService {
         );
     }
 
+    @Transactional
     public String disableUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

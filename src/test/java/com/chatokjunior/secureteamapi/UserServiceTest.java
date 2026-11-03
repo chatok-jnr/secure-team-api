@@ -57,6 +57,10 @@ public class UserServiceTest {
         SecurityContextHolder.clearContext();
     }
 
+
+    // Test Methods ------------------------------------------------
+
+    // Create new User
     @Test
     void createNewUser_whenEmailIsNew_savesUserAndReturnResponse() {
         // Arrange
@@ -112,6 +116,7 @@ public class UserServiceTest {
         verifyNoInteractions(auditService);
     }
 
+    // Update User Role
     @Test
     void updateUserRole_whenRoleIsDifferent_savesUserAndRecordsAudit() {
         UUID id = UUID.randomUUID();
@@ -138,5 +143,21 @@ public class UserServiceTest {
                 isNull()
         );
 
+    }
+
+    @Test
+    void updateUserRole_whenUserNotFound_throwsUserNotFoundException() {
+        UUID id = UUID.randomUUID();
+
+        RoleUpdateRequest request = new RoleUpdateRequest();
+        request.setRole(Role.MANAGER);
+
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.updateUserRole(id, request))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(auditService);
     }
 }

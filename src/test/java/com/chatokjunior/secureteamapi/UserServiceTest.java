@@ -210,4 +210,30 @@ public class UserServiceTest {
 
     }
 
+    // disableUserById
+    @Test
+    void disableUserById_whenUserIsEnabled_disablesUserAndRecordsAudit() {
+        UUID id = UUID.randomUUID();
+        User user = User.builder()
+                .id(id)
+                .enabled(true)
+                .build();
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        String res = userService.disableUserById(id);
+
+        verify(auditService).record(
+                eq(AuditAction.ACCOUNT_DISABLED),
+                eq("admin@test.com"),
+                eq("USER"),
+                eq(id.toString()),
+                eq("User account disabled"),
+                isNull()
+        );
+
+        assertThat(user.isEnabled()).isFalse();
+        verify(userRepository).save(any());
+        assertThat(res).isEqualTo("User Has Been Disable Successfully");
+    }
 }

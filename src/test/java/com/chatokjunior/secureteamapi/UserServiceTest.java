@@ -197,4 +197,17 @@ public class UserServiceTest {
         assertThat(user).isSameAs(response);
         verify(userRepository).getUserById(id);
     }
+
+    @Test
+    void getUserBYId_whenUserNotFound_throwsUserNotFoundException() {
+        UUID id = UUID.randomUUID();
+
+        when(userRepository.getUserById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getUserBYId(id))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User not found");
+
+    }
+
 }

@@ -2,19 +2,18 @@ package com.chatokjunior.secureteamapi;
 
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.audit.services.AuditService;
+import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
+import com.chatokjunior.secureteamapi.user.dto.*;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
 import com.chatokjunior.secureteamapi.user.UserService;
-import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
-import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -310,6 +309,33 @@ public class UserServiceTest {
         assertThatThrownBy(() -> userService.myProfile(authentication))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User with this email not found: chatok@test.com");
+    }
+
+    // changePassword
+    @Test
+    void changePassword_whenCurrentPasswordIsWrong_throwsPasswordMismatchedException() {
+       // Arrange
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setCurrentPassword("wrongOld");
+        request.setNewPassword("newPass");
+
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .email("admin@tess.com")
+                .password("oldHash")
+                .build();
+
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongOld", "oldHash")).thenReturn(false);
+
+        // Act + Assert
+        assertThatThrownBy(() -> userService.changePassword(response, request))
+                .isInstanceOf(PasswordMismatchedException.class);
+
+        verify(userRepository, never()).save(any());
+        verifyNoInteractions(authSessionService, auditService);
     }
 
 }

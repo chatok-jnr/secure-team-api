@@ -6,6 +6,7 @@ import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
+import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
@@ -29,8 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -190,6 +190,24 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isConflict());
+    }
+
+    // updateUserRole
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserRole_whenAdminAndValidBody_returns200() throws Exception {
+        String body = """
+                {
+                    "role":"MANAGER"
+                }
+                """;
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+        verify(userService).updateUserRole(eq(id), any(RoleUpdateRequest.class));
     }
 
 }

@@ -210,4 +210,24 @@ public class UserControllerTest {
         verify(userService).updateUserRole(eq(id), any(RoleUpdateRequest.class));
     }
 
+    @Test
+    @WithMockUser(roles = "MANAGER")
+    void updateUserRole_whenNotAdmin_returns403() throws Exception{
+
+        UUID id = UUID.randomUUID();
+
+        String body = """
+                {
+                    "role":"MANAGER"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(userService, never()).updateUserRole(eq(id), any(RoleUpdateRequest.class));
+    }
+
 }

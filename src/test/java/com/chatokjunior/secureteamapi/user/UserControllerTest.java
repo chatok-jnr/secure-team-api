@@ -32,8 +32,7 @@ import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
@@ -308,5 +307,45 @@ public class UserControllerTest {
         verifyNoInteractions(userService);
     }
 
+    // disableUserById
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void disableUserById_whenAdmin_returns200AndMessage() throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        when(userService.disableUserById(id)).thenReturn("User Has Been Disable Successfully");
+
+        mockMvc.perform(patch("/api/users/{id}/disable", id))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User Has Been Disable Successfully"));
+
+        verify(userService).disableUserById(id);
+    }
+
+    @Test
+    @WithMockUser(roles = "MANAGER")
+    void disableUserById_whenNotAdmin_returns403() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/users/{id}/disable", id))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void disableUserById_whenUserNotFound_returns404() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(userService.disableUserById(id))
+                .thenThrow(new UserNotFoundException("User not found"));
+
+        mockMvc.perform(patch("/api/users/{id}/disable", id))
+                .andExpect(status().isNotFound());
+
+        verify(userService).disableUserById(id);
+    }
 
 }

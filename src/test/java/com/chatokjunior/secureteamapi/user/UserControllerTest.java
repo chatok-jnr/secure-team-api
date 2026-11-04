@@ -2,10 +2,12 @@ package com.chatokjunior.secureteamapi.user;
 
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetailsService;
 import com.chatokjunior.secureteamapi.config.SecurityConfig;
+import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
 import com.chatokjunior.secureteamapi.user.entity.Role;
+import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import lombok.With;
 import org.junit.jupiter.api.Test;
@@ -151,4 +153,43 @@ public class UserControllerTest {
         mockMvc.perform(post("/api/users"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createUser_whenPasswordTooShort_returns400() throws Exception{
+        String body = """
+                {
+                    "fullName":"Chatok Junior",
+                    "password":"short",
+                    "email":"chatok@test.com"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createUser_whenEmailAlreadyExists_returns409() throws Exception{
+
+        String body = """
+                {
+                    "fullName":"Chatok Junior",
+                    "password":"Password123",
+                    "email":"chatok@test.com"
+                }
+                """;
+
+        when(userService.createNewUser(any(CreateUserRequest.class)))
+                .thenThrow(new UserAlreadyExistsException("Email already exists"));
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isConflict());
+    }
+
 }

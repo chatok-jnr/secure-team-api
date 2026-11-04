@@ -3,6 +3,7 @@ package com.chatokjunior.secureteamapi.user;
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetailsService;
 import com.chatokjunior.secureteamapi.config.SecurityConfig;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
+import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
@@ -243,6 +244,47 @@ public class UserControllerTest {
         mockMvc.perform(patch("/api/users/{id}/role", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserRole_whenUserNotFound_returns404() throws Exception{
+        UUID id = UUID.randomUUID();
+
+        String body = """
+                {
+                    "role":"MANAGER"
+                }
+                """;
+
+        doThrow(new UserNotFoundException("User not found"))
+                .when(userService).updateUserRole(eq(id), any(RoleUpdateRequest.class));
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+
+        verify(userService).updateUserRole(eq(id), any(RoleUpdateRequest.class));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserRole_whenRoleValueIsInvalid_returns400() throws Exception{
+        UUID id = UUID.randomUUID();
+
+        String body = """
+                {
+                    "role":"SUPERHERO"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(userService);

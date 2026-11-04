@@ -1,4 +1,4 @@
-package com.chatokjunior.secureteamapi;
+package com.chatokjunior.secureteamapi.user;
 
 import com.chatokjunior.secureteamapi.audit.entity.AuditAction;
 import com.chatokjunior.secureteamapi.audit.services.AuditService;
@@ -9,7 +9,6 @@ import com.chatokjunior.secureteamapi.refresh.RefreshToken;
 import com.chatokjunior.secureteamapi.user.dto.*;
 import com.chatokjunior.secureteamapi.auth.service.AuthSessionService;
 import com.chatokjunior.secureteamapi.refresh.RefreshTokenRepository;
-import com.chatokjunior.secureteamapi.user.UserService;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;

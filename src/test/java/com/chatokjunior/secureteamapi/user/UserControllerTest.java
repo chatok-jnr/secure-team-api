@@ -290,4 +290,23 @@ public class UserControllerTest {
         verifyNoInteractions(userService);
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserRole_whenRoleMissing_returns400() throws Exception{
+        UUID id = UUID.randomUUID();
+
+        String body = """
+                {
+                }
+                """;
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+
 }

@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
+import javax.print.attribute.standard.Media;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -117,6 +118,7 @@ public class UserControllerTest {
                     "role": "EMPLOYEE"
                 }
                 """;
+
         mockMvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
@@ -124,4 +126,23 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("chatok@test.com"));
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void createUser_whenEmailMissing_returns400() throws Exception{
+
+        String body = """
+                {
+                    "fullName":"Chatok Junior",
+                    "password":"Password123",
+                    "role":"EMPLOYEE"
+                }
+                """;
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                        .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
 }

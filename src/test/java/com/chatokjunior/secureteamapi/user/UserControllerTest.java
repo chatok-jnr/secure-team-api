@@ -145,4 +145,10 @@ public class UserControllerTest {
 
         verifyNoInteractions(userService);
     }
+
+    @Test
+    void createUser_whenNotAuthenticated_returnsUnauthorized() throws Exception{
+        mockMvc.perform(post("/api/users"))
+                .andExpect(status().isUnauthorized());
+    }
 }

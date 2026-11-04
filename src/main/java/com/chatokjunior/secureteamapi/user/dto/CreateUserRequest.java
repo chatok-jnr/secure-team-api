@@ -12,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateUserRequest {
+    @NotBlank
     @Email(message = "Please enter an valid email")
     private String email;
 

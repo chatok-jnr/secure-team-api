@@ -230,4 +230,22 @@ public class UserControllerTest {
         verify(userService, never()).updateUserRole(eq(id), any(RoleUpdateRequest.class));
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserRole_whenIdIsNotUuid_returns400() throws Exception{
+        String id = "123454";
+        String body = """
+                {
+                    "role":"MANAGER"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/users/{id}/role", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
 }

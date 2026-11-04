@@ -13,15 +13,21 @@ import com.chatokjunior.secureteamapi.user.UserService;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,6 +72,7 @@ public class UserServiceTest {
 
     // createNewUser
     @Test
+    @DisplayName("createNewUser_whenEmailIsNew_savesUserAndReturnResponse")
     void createNewUser_whenEmailIsNew_savesUserAndReturnResponse() {
         // Arrange
         CreateUserRequest request = CreateUserRequest.builder()
@@ -104,6 +111,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("createNewUser_whenEmailExists_throwsAndDoesNotSave")
     void createNewUser_whenEmailExists_throwsAndDoesNotSave() {
         CreateUserRequest request = CreateUserRequest.builder()
                 .fullName("Chatok Junior")
@@ -122,6 +130,7 @@ public class UserServiceTest {
 
     // updateUserRole
     @Test
+    @DisplayName("updateUserRole_whenRoleIsDifferent_savesUserAndRecordsAudit")
     void updateUserRole_whenRoleIsDifferent_savesUserAndRecordsAudit() {
         UUID id = UUID.randomUUID();
         User user = User.builder()
@@ -150,6 +159,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("updateUserRole_whenUserNotFound_throwsUserNotFoundException")
     void updateUserRole_whenUserNotFound_throwsUserNotFoundException() {
         UUID id = UUID.randomUUID();
 
@@ -166,6 +176,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("updateUserRole_whenRoleIsSame_doesNotSaveOrAudit")
     void updateUserRole_whenRoleIsSame_doesNotSaveOrAudit() {
         UUID id = UUID.randomUUID();
 
@@ -187,6 +198,7 @@ public class UserServiceTest {
 
     // getUserById
     @Test
+    @DisplayName("getUserBYId_whenUserIsFound_returnsUserDetails")
     void getUserBYId_whenUserIsFound_returnsUserDetails() {
         UUID id = UUID.randomUUID();
         GetUserDetailsDto response = new GetUserDetailsDto(id, "Chatok Junior", "chatok@test.com", Role.EMPLOYEE,
@@ -201,6 +213,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("getUserBYId_whenUserNotFound_throwsUserNotFoundException")
     void getUserBYId_whenUserNotFound_throwsUserNotFoundException() {
         UUID id = UUID.randomUUID();
 
@@ -214,6 +227,7 @@ public class UserServiceTest {
 
     // disableUserById
     @Test
+    @DisplayName("disableUserById_whenUserIsEnabled_disablesUserAndRecordsAudit")
     void disableUserById_whenUserIsEnabled_disablesUserAndRecordsAudit() {
         UUID id = UUID.randomUUID();
         User user = User.builder()
@@ -240,6 +254,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("disableUserById_whenUserIsDisabled_enablesUserAndRecordsAudit")
     void disableUserById_whenUserIsDisabled_enablesUserAndRecordsAudit() {
         UUID id = UUID.randomUUID();
         User user = User.builder()
@@ -266,6 +281,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("disableUserById_whenUserNotFound_throwsUserNotFoundException")
     void disableUserById_whenUserNotFound_throwsUserNotFoundException() {
         UUID id = UUID.randomUUID();
 
@@ -280,6 +296,7 @@ public class UserServiceTest {
 
     // myProfile
     @Test
+    @DisplayName("myProfile_whenUserExists_returnsMyProfileResponse")
     void myProfile_whenUserExists_returnsMyProfileResponse() {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken("chatok@test.com", null, List.of());
@@ -303,6 +320,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("myProfile_whenUserDoesNotExist_throwsUserNotFoundException")
     void myProfile_whenUserDoesNotExist_throwsUserNotFoundException() {
         Authentication authentication = new UsernamePasswordAuthenticationToken("chatok@test.com", null, List.of());
         when(userRepository.findByEmail(authentication.getName())).thenReturn(Optional.empty());
@@ -314,6 +332,7 @@ public class UserServiceTest {
 
     // changePassword
     @Test
+    @DisplayName("changePassword_whenCurrentPasswordIsWrong_throwsPasswordMismatchedException")
     void changePassword_whenCurrentPasswordIsWrong_throwsPasswordMismatchedException() {
        // Arrange
         HttpServletResponse response = mock(HttpServletResponse.class);
@@ -340,6 +359,7 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("changePassword_whenCurrentPasswordIsCorrect_updatesPasswordRevokesSessionsAndIssuesNewTokens")
     void changePassword_whenCurrentPasswordIsCorrect_updatesPasswordRevokesSessionsAndIssuesNewTokens() {
 
         // Arrange
@@ -386,4 +406,37 @@ public class UserServiceTest {
         );
     }
 
+    // revokeAllSession
+    @Test
+    @DisplayName("revokeAllSession_marksEveryTokenAsRevoked")
+    void revokeAllSession_marksEveryTokenAsRevoked() {
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .email("chatok@test.com")
+                .build();
+
+        RefreshToken token1 = new RefreshToken();
+        RefreshToken token2 = new RefreshToken();
+
+        when(refreshTokenRepository.findAllByUser(user)).thenReturn(List.of(token1, token2));
+
+        userService.revokeAllSession(user);
+
+        assertThat(token1.isRevoked()).isTrue();
+        assertThat(token2.isRevoked()).isTrue();
+    }
+
+    // getUsers
+    @Test
+    @DisplayName("getUsers_returnPageFromRepository")
+    void getUsers_returnPageFromRepository() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<GetAllUsersDto> page = new PageImpl<>(List.of());
+
+        when(userRepository.getAllUser(pageable)).thenReturn(page);
+
+        Page<GetAllUsersDto> result = userService.getUsers(pageable);
+
+        assertThat(result).isSameAs(page);
+    }
 }

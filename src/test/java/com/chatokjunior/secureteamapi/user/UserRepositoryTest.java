@@ -3,6 +3,7 @@ package com.chatokjunior.secureteamapi.user;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import com.chatokjunior.secureteamapi.user.repository.projections.EnableCountProjection;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.RoleCountProjection;
@@ -187,7 +188,6 @@ public class UserRepositoryTest {
                     RoleCountProjection::getCount
                 ));
 
-
         assertThat(countMap)
                 .containsEntry(Role.EMPLOYEE, 3L)
                 .containsEntry(Role.MANAGER, 2L)
@@ -199,5 +199,26 @@ public class UserRepositoryTest {
         List<RoleCountProjection> result = userRepository.countByRole();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void countEnabledUser_whenEnabledAndDisabledUsersExist_returnsCountForEach() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+        saveUser("user_2@test.com", Role.EMPLOYEE);
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+        User user4 = saveUser("user_4@test.com", Role.EMPLOYEE);
+        user4.setEnabled(false);
+        userRepository.save(user4);
+
+        List<EnableCountProjection> result = userRepository.countEnabledUser();
+
+        Map<Boolean, Long> enableCount = result.stream()
+                .collect(Collectors.toMap(
+                        EnableCountProjection::getEnabled,
+                        EnableCountProjection::getCount
+                ));
+
+        assertThat(enableCount.get(true)).isEqualTo(3L);
+        assertThat(enableCount.get(false)).isEqualTo(1L);
     }
 }

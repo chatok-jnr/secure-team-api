@@ -5,6 +5,7 @@ import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
+import com.chatokjunior.secureteamapi.user.repository.projections.RoleCountProjection;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -18,12 +19,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @DataJpaTest
@@ -168,5 +168,29 @@ public class UserRepositoryTest {
         Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
 
         assertThat(result.getContent()).hasSize(0);
+    }
+
+    @Test
+    void countByRole_whenMixedRoles_returnsCountPerRole() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+        saveUser("user_2@test.com", Role.EMPLOYEE);
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+        saveUser("user_4@test.com", Role.MANAGER);
+        saveUser("user_5@test.com", Role.MANAGER);
+        saveUser("user_6@test.com", Role.ADMIN);
+
+        List<RoleCountProjection> result = userRepository.countByRole();
+
+        Map<Role, Long> countMap = result.stream()
+                .collect(Collectors.toMap(
+                    RoleCountProjection::getRole,
+                    RoleCountProjection::getCount
+                ));
+
+
+        assertThat(countMap)
+                .containsEntry(Role.EMPLOYEE, 3L)
+                .containsEntry(Role.MANAGER, 2L)
+                .containsEntry(Role.ADMIN, 1L);
     }
 }

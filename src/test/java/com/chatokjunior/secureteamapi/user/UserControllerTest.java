@@ -56,6 +56,7 @@ public class UserControllerTest {
     // Test Methods
     // ====================
 
+    // getUser
     @Test
     @WithMockUser
     void getUser_whenAuthenticated_returns200AndUserDetails() throws Exception {
@@ -80,6 +81,32 @@ public class UserControllerTest {
 
     }
 
+    @Test
+    @WithMockUser()
+    void getUser_whenUserNotFound_returns404() throws Exception {
+
+        UUID id = UUID.randomUUID();
+
+        when(userService.getUserBYId(id))
+                .thenThrow(new UserNotFoundException("User not found"));
+
+        mockMvc.perform(get("/api/users/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("User not found"));
+
+        verify(userService).getUserBYId(id);
+    }
+
+    @Test
+    void getUser_whenNotAuthenticated_returnsUnauthorized() throws Exception {
+        UUID id = UUID.randomUUID();
+        mockMvc.perform(get("/api/users/{id}", id))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(userService);
+    }
+
+    // getUsers
     @Test
     @WithMockUser(roles = "EMPLOYEE")
     void getUsers_whenNotAdmin_returns403() throws Exception{
@@ -457,4 +484,6 @@ public class UserControllerTest {
 
         verifyNoInteractions(userService);
     }
+
+
 }

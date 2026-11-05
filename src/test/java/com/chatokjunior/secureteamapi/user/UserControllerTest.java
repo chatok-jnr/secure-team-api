@@ -7,6 +7,7 @@ import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
 import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
+import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
 import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -348,4 +350,34 @@ public class UserControllerTest {
         verify(userService).disableUserById(id);
     }
 
+    // myProfile
+    @Test
+    @WithMockUser(username = "chatok@test.com", roles = "EMPLOYEE")
+    void myProfile_whenAuthenticated_returns200AndProfile() throws Exception {
+
+        MyProfileResponse response = MyProfileResponse.builder()
+                .fullName("Chatok Junior")
+                .email("chatok@test.com")
+                .role(Role.EMPLOYEE)
+                .build();
+
+        when(userService.myProfile(any(Authentication.class))).thenReturn(response);
+
+        mockMvc.perform(get("/api/users/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("chatok@test.com"))
+                .andExpect(jsonPath("$.fullName").value("Chatok Junior"))
+                .andExpect(jsonPath("$.role").value("EMPLOYEE"));
+
+        verify(userService).myProfile(argThat(auth -> auth.getName().equals("chatok@test.com")));
+    }
+
+    @Test
+    void myProfile_whenNotAuthenticated_returnsUnauthorized() throws Exception{
+
+        mockMvc.perform(get("/api/users/me"))
+                        .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(userService);
+    }
 }

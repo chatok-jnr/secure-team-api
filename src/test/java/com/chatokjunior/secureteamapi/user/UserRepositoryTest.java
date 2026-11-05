@@ -218,7 +218,27 @@ public class UserRepositoryTest {
                         EnableCountProjection::getCount
                 ));
 
-        assertThat(enableCount.get(true)).isEqualTo(3L);
-        assertThat(enableCount.get(false)).isEqualTo(1L);
+        assertThat(enableCount).containsExactlyInAnyOrderEntriesOf(Map.of(
+                true, 3L,
+                false, 1L
+        ));
+    }
+
+    @Test
+    void countEnabledUser_whenAllUsersAreEnabled_returnsOnlyEnabledGroup() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+        saveUser("user_2@test.com", Role.EMPLOYEE);
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+        saveUser("user_4@test.com", Role.EMPLOYEE);
+
+        List<EnableCountProjection> result = userRepository.countEnabledUser();
+
+        Map<Boolean, Long> countEnableUser = result.stream()
+                .collect(Collectors.toMap(
+                   EnableCountProjection::getEnabled,
+                   EnableCountProjection::getCount
+                ));
+
+        assertThat(countEnableUser).containsExactlyEntriesOf(Map.of(true, 4L));
     }
 }

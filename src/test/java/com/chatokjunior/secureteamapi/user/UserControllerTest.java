@@ -13,6 +13,8 @@ import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetails
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.With;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -31,6 +33,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -391,6 +394,8 @@ public class UserControllerTest {
                 }
                 """;
 
+        ArgumentCaptor<ChangePasswordRequest> captor = ArgumentCaptor.forClass(ChangePasswordRequest.class);
+
         when(userService.changePassword(any(HttpServletResponse.class), any(ChangePasswordRequest.class)))
                 .thenReturn("Password updated successfully");
 
@@ -399,6 +404,11 @@ public class UserControllerTest {
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Password updated successfully"));
+
+        verify(userService).changePassword(any(HttpServletResponse.class), captor.capture());
+
+        assertThat(captor.getValue().getCurrentPassword()).isEqualTo("currentPass123");
+        assertThat(captor.getValue().getNewPassword()).isEqualTo("newPass123");
     }
 
     @Test

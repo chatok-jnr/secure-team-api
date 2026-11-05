@@ -193,4 +193,11 @@ public class UserRepositoryTest {
                 .containsEntry(Role.MANAGER, 2L)
                 .containsEntry(Role.ADMIN, 1L);
     }
+
+    @Test
+    void countByRole_whenNoUsersExist_returnsEmptyList() {
+        List<RoleCountProjection> result = userRepository.countByRole();
+
+        assertThat(result).isEmpty();
+    }
 }

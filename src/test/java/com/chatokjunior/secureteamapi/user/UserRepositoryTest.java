@@ -18,12 +18,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -139,7 +140,6 @@ public class UserRepositoryTest {
         Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
 
         assertThat(result.getTotalElements()).isEqualTo(4);
-
         assertThat(result.getSize()).isEqualTo(10);
     }
 
@@ -157,8 +157,16 @@ public class UserRepositoryTest {
 
         Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
 
+        assertThat(result.getContent()).hasSize(2);
         assertThat(result.getTotalElements()).isEqualTo(4);
+    }
 
-        assertThat(result.getSize()).isEqualTo(2);
+    @Test
+    void getAllUser_whenNoUsersExist_returnsEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("email").ascending());
+
+        Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
+
+        assertThat(result.getContent()).hasSize(0);
     }
 }

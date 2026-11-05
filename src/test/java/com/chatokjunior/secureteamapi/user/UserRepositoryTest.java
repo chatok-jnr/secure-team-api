@@ -142,4 +142,23 @@ public class UserRepositoryTest {
 
         assertThat(result.getSize()).isEqualTo(10);
     }
+
+    @Test
+    void getAllUser_whenPageSizeIsSmallerThanTotal_returnsOnlyThatManyUsers() {
+        List<String> emails = new ArrayList<>();
+        emails.add("user_1@test.com");
+        emails.add("user_2@test.com");
+        emails.add("user_3@test.com");
+        emails.add("user_4@test.com");
+
+        for(String e:emails) saveUser(e, Role.EMPLOYEE);
+
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("email").ascending());
+
+        Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(4);
+
+        assertThat(result.getSize()).isEqualTo(2);
+    }
 }

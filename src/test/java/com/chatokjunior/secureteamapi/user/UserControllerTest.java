@@ -2,16 +2,15 @@ package com.chatokjunior.secureteamapi.user;
 
 import com.chatokjunior.secureteamapi.auth.service.CustomUserDetailsService;
 import com.chatokjunior.secureteamapi.config.SecurityConfig;
+import com.chatokjunior.secureteamapi.exception.PasswordMismatchedException;
 import com.chatokjunior.secureteamapi.exception.UserAlreadyExistsException;
 import com.chatokjunior.secureteamapi.exception.UserNotFoundException;
 import com.chatokjunior.secureteamapi.security.jwt.JwtService;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserRequest;
-import com.chatokjunior.secureteamapi.user.dto.CreateUserResponse;
-import com.chatokjunior.secureteamapi.user.dto.MyProfileResponse;
-import com.chatokjunior.secureteamapi.user.dto.RoleUpdateRequest;
+import com.chatokjunior.secureteamapi.user.dto.*;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.With;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -377,6 +376,74 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/api/users/me"))
                         .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(userService);
+    }
+
+    // changePassword
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void changePassword_whenValidBody_returns200() throws Exception{
+        String body = """
+                {
+                    "currentPassword":"currentPass123",
+                    "newPassword":"newPass123"
+                }
+                """;
+
+        when(userService.changePassword(any(HttpServletResponse.class), any(ChangePasswordRequest.class)))
+                .thenReturn("Password updated successfully");
+
+        mockMvc.perform(patch("/api/users/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Password updated successfully"));
+    }
+
+    @Test
+    @WithMockUser(roles = "EMPLOYEE")
+    void changePassword_whenBodyInvalid_returns400() throws Exception {
+        String body = """
+                {
+                    "newPassword":"newPass123"
+                }
+                """;
+        mockMvc.perform(patch("/api/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    @WithMockUser(roles = "EMPLOYEE")
+    void changePassword_whenCurrentPasswordWrong_returns400() throws Exception {
+        String body = """
+                {
+                    "currentPassword":"currentPass123",
+                    "newPassword":"newPass123"
+                }
+                """;
+
+        when(userService.changePassword(any(HttpServletResponse.class), any(ChangePasswordRequest.class)))
+                .thenThrow(new PasswordMismatchedException("Your current Password is incorrect"));
+
+        mockMvc.perform(patch("/api/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Your current Password is incorrect"))
+                .andExpect(jsonPath("$.title").value("Incorrect Password"));
+
+        verify(userService).changePassword(any(HttpServletResponse.class), any(ChangePasswordRequest.class));
+    }
+
+    @Test
+    void changePassword_whenNotAuthenticated_returnsUnauthorized() throws Exception{
+        mockMvc.perform(patch("/api/users/password"))
+                .andExpect(status().isUnauthorized());
 
         verifyNoInteractions(userService);
     }

@@ -3,16 +3,23 @@ package com.chatokjunior.secureteamapi.user;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;
+import com.chatokjunior.secureteamapi.user.repository.projections.GetAllUsersDto;
 import com.chatokjunior.secureteamapi.user.repository.projections.GetUserDetailsDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,7 +40,7 @@ public class UserRepositoryTest {
     private User saveUser(String email, Role role) {
         return userRepository.save(User.builder()
                         .fullName("Chatok Junior")
-                        .email("chatok@test.com")
+                        .email(email)
                         .password("hash")
                         .role(role)
                 .build());
@@ -93,5 +100,32 @@ public class UserRepositoryTest {
         Optional<GetUserDetailsDto> result = userRepository.getUserById(id);
 
         assertThat(result).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    void getAllUser_whenUsersExist_returnsSavedUsers() {
+
+        List<String> emails = new ArrayList<>();
+        emails.add("user_1@test.com");
+        emails.add("user_2@test.com");
+        emails.add("user_3@test.com");
+        emails.add("user_4@test.com");
+
+        for(String e:emails) saveUser(e, Role.EMPLOYEE);
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("email").ascending());
+
+        Page<GetAllUsersDto> result = userRepository.getAllUser(pageable);
+
+        for(int i = 0; i < 4; i++) {
+            assertThat(result.getContent().get(i).email()).isEqualTo(emails.get(i));
+            assertThat(result.getContent().get(i).role()).isEqualTo(Role.EMPLOYEE);
+            assertThat(result.getContent().get(i).fullName()).isEqualTo("Chatok Junior");
+        }
+    }
+
+    @Test
+    void getAllUser_whenUsersExist_returnsCorrectTotalElements() {
+
     }
 }

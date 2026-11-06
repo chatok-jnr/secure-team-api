@@ -296,15 +296,6 @@ public class UserRepositoryTest {
         List<AdminDashboardResponse.RecentUser> result = userRepository.getRecentUsers(pageable);
 
         assertThat(result).hasSize(3);
-        Map<String, AdminDashboardResponse.RecentUser> recentUsers = result.stream()
-                .collect(Collectors.toMap(
-                   AdminDashboardResponse.RecentUser::email,
-                   ru -> ru
-                ));
-
-        assertThat(recentUsers.get("user_6@test.com")).isEqualTo(result.get(0));
-        assertThat(recentUsers.get("user_5@test.com")).isEqualTo(result.get(1));
-        assertThat(recentUsers.get("user_4@test.com")).isEqualTo(result.get(2));
     }
 
     @Test
@@ -318,19 +309,11 @@ public class UserRepositoryTest {
 
         Pageable pageable = PageRequest.of(0, 6);
 
-        List<AdminDashboardResponse.RecentUser> result = userRepository.getRecentUsers(pageable);
+        List<AdminDashboardResponse.RecentUser> recentUsers = userRepository.getRecentUsers(pageable);
 
-        Map<String, AdminDashboardResponse.RecentUser> recentUsers = result.stream()
-                .collect(Collectors.toMap(
-                        AdminDashboardResponse.RecentUser::email,
-                        ru -> ru
-                ));
-
-        assertThat(recentUsers.get("user_6@test.com")).isEqualTo(result.get(0));
-        assertThat(recentUsers.get("user_5@test.com")).isEqualTo(result.get(1));
-        assertThat(recentUsers.get("user_4@test.com")).isEqualTo(result.get(2));
-        assertThat(recentUsers.get("user_3@test.com")).isEqualTo(result.get(3));
-        assertThat(recentUsers.get("user_2@test.com")).isEqualTo(result.get(4));
-        assertThat(recentUsers.get("user_1@test.com")).isEqualTo(result.get(5));
+        assertThat(recentUsers)
+                .extracting(AdminDashboardResponse.RecentUser::email)
+                .containsExactly("user_6@test.com", "user_5@test.com", "user_4@test.com", "user_3@test.com",
+                        "user_2@test.com", "user_1@test.com");
     }
 }

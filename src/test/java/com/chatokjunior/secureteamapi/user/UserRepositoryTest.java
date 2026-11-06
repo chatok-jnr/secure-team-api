@@ -241,4 +241,44 @@ public class UserRepositoryTest {
 
         assertThat(countEnableUser).containsExactlyEntriesOf(Map.of(true, 4L));
     }
+
+    @Test
+    void lockedUser_whenSomeUsersAreLocked_countsOnlyLockedUsers() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+
+        User user_2 = saveUser("user_2@test.com", Role.EMPLOYEE);
+        user_2.setAccountNonLocked(false);
+        userRepository.save(user_2);
+
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+
+        User user_3 = saveUser("user_4@test.com", Role.MANAGER);
+        user_3.setAccountNonLocked(false);
+        userRepository.save(user_3);
+
+        saveUser("user_5@test.com", Role.MANAGER);
+
+        saveUser("user_6@test.com", Role.ADMIN);
+
+        User user_7 = saveUser("user_7@test.com", Role.ADMIN);
+        user_7.setAccountNonLocked(false);
+        userRepository.save(user_7);
+
+        long lockedUserCount = userRepository.lockedUser();
+        assertThat(lockedUserCount).isEqualTo(3);
+    }
+
+    @Test
+    void lockedUser_whenNoUserIsLocked_returnsZero() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+        saveUser("user_2@test.com", Role.EMPLOYEE);
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+        saveUser("user_4@test.com", Role.MANAGER);
+        saveUser("user_5@test.com", Role.MANAGER);
+        saveUser("user_6@test.com", Role.ADMIN);
+
+        long lockedUserCount = userRepository.lockedUser();
+        assertThat(lockedUserCount).isEqualTo(0);
+    }
+
 }

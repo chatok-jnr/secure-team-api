@@ -307,4 +307,30 @@ public class UserRepositoryTest {
         assertThat(recentUsers.get("user_4@test.com")).isEqualTo(result.get(2));
     }
 
+    @Test
+    void getRecentUsers_whenMultipleUsersExist_returnsNewestFirst() {
+        saveUser("user_1@test.com", Role.EMPLOYEE);
+        saveUser("user_2@test.com", Role.EMPLOYEE);
+        saveUser("user_3@test.com", Role.EMPLOYEE);
+        saveUser("user_4@test.com", Role.MANAGER);
+        saveUser("user_5@test.com", Role.MANAGER);
+        saveUser("user_6@test.com", Role.ADMIN);
+
+        Pageable pageable = PageRequest.of(0, 6);
+
+        List<AdminDashboardResponse.RecentUser> result = userRepository.getRecentUsers(pageable);
+
+        Map<String, AdminDashboardResponse.RecentUser> recentUsers = result.stream()
+                .collect(Collectors.toMap(
+                        AdminDashboardResponse.RecentUser::email,
+                        ru -> ru
+                ));
+
+        assertThat(recentUsers.get("user_6@test.com")).isEqualTo(result.get(0));
+        assertThat(recentUsers.get("user_5@test.com")).isEqualTo(result.get(1));
+        assertThat(recentUsers.get("user_4@test.com")).isEqualTo(result.get(2));
+        assertThat(recentUsers.get("user_3@test.com")).isEqualTo(result.get(3));
+        assertThat(recentUsers.get("user_2@test.com")).isEqualTo(result.get(4));
+        assertThat(recentUsers.get("user_1@test.com")).isEqualTo(result.get(5));
+    }
 }

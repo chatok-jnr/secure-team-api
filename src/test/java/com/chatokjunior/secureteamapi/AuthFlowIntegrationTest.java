@@ -63,5 +63,36 @@ public class AuthFlowIntegrationTest {
                 .getCookies();
     }
 
+    @Test
+    void login_whenCredentialsValid_setsAccessAndRefreshCookies() throws Exception {
+        createUser("chatok@test.com", Role.EMPLOYEE);
 
+        String body = """
+                {
+                    "email":"chatok@test.com",
+                    "password":"Password123"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().httpOnly("accessToken", true))
+                .andExpect(cookie().exists("refreshToken"))
+                .andExpect(cookie().httpOnly("refreshToken", true));
+    }
+
+    @Test
+    void me_whenLoggedInWithRealCookies_returnsOwnProfile() throws Exception {
+        createUser("chatok@test.com", Role.EMPLOYEE);
+        Cookie[] cookies = login("chatok@test.com");
+
+        mockMvc.perform(get("/api/users/me").cookie(cookies))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("chatok@test.com"))
+                .andExpect(jsonPath("$.role").value("EMPLOYEE"))
+                .andExpect(jsonPath("$.fullName").value("Test User"));
+    }
 }

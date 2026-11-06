@@ -126,17 +126,4 @@ public class AuthController {
         sessionService.revokeSession(authentication.getName(), id);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/test")
-    @PreAuthorize("hasAuthority('USER_DELETE')")
-    public Void test() {
-
-//        emailService.sendMail(
-//                "sakib.0000.ansary@gmail.com",
-//                "Testing if our thing is working or not?",
-//                "This is the body of the mail"
-//        );
-
-        return null;
-    }
 }

@@ -64,6 +64,61 @@ public class AuthFlowIntegrationTest {
     }
 
     @Test
+    void login_withInvalidEmail_return400() throws Exception{
+        createUser("chatok@test.com", Role.EMPLOYEE);
+
+        String body = """
+                {
+                    "email":"chatokTeste.com",
+                    "password":"Password123"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"));
+    }
+
+    @Test
+    void login_withInvalidPassword_return400() throws Exception {
+        createUser("chatok@test.com", Role.EMPLOYEE);
+
+        String body = """
+                {
+                    "email":"chatok@test.com",
+                    "password":"pass"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 20"));
+    }
+
+    @Test
+    void login_withInvalidEmailAndPassword_return400WithMessage() throws Exception {
+        createUser("chatok@test.com", Role.EMPLOYEE);
+
+        String body = """
+                {
+                    "email":"chatok.com",
+                    "password":"pass"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"))
+                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 20"));
+    }
+
+    @Test
     void login_whenCredentialsValid_setsAccessAndRefreshCookies() throws Exception {
         createUser("chatok@test.com", Role.EMPLOYEE);
 
@@ -121,41 +176,5 @@ public class AuthFlowIntegrationTest {
         mockMvc.perform(get("/api/users")
                 .cookie(cookies))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void login_withInvalidEmail_return400() throws Exception{
-        createUser("chatok@test.com", Role.EMPLOYEE);
-
-        String body = """
-                {
-                    "email":"chatokTeste.com",
-                    "password":"Password123"
-                }
-                """;
-
-        mockMvc.perform(post("/api/auth/login")
-                .content(body)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"));
-    }
-
-    @Test
-    void login_withInvalidPassword_return400() throws Exception {
-        createUser("chatok@test.com", Role.EMPLOYEE);
-
-        String body = """
-                {
-                    "email":"chatok@test.com",
-                    "password":"pass"
-                }
-                """;
-
-        mockMvc.perform(post("/api/auth/login")
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 20"));
     }
 }

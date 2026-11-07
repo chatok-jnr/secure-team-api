@@ -101,4 +101,15 @@ public class AuthFlowIntegrationTest {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void getUsers_whenLoggedInAsEmployee_returnsForbidden() throws Exception{
+
+        createUser("chatok@test.com", Role.EMPLOYEE);
+        Cookie[] cookies = login("chatok@test.com");
+
+        mockMvc.perform(get("/api/users")
+                        .cookie(cookies))
+                .andExpect(status().isForbidden());
+    }
 }

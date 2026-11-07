@@ -112,4 +112,14 @@ public class AuthFlowIntegrationTest {
                         .cookie(cookies))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void getUsers_whenLoggedInAsAdmin_returnsOk() throws Exception{
+        createUser("chatok@test.com", Role.ADMIN);
+        Cookie[] cookies = login("chatok@test.com");
+
+        mockMvc.perform(get("/api/users")
+                .cookie(cookies))
+                .andExpect(status().isOk());
+    }
 }

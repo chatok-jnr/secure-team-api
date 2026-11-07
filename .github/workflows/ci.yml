@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Run tests
+        run: mvn -B test
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/unused
+          DB_USERNAME: unused
+          DB_PASSWORD: unused
+          MAIL_USERNAME: test@example.com
+          MAIL_PASSWORD: dummy-password
+          MAIL_FROM: test@example.com
+          JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+          OTP_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports

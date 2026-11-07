@@ -155,6 +155,7 @@ public class AuthFlowIntegrationTest {
         mockMvc.perform(post("/api/auth/login")
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").value("size must be between 8 and 20"));
     }
 }

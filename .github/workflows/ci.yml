@@ -1,0 +1,11 @@
+- name: Run tests
+  run: mvn -B test
+  env:
+    DB_URL: jdbc:postgresql://localhost:5432/unused
+    DB_USERNAME: unused
+    DB_PASSWORD: unused
+    MAIL_USERNAME: test@example.com
+    MAIL_PASSWORD: dummy-password
+    MAIL_FROM: test@example.com
+    JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    OTP_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef

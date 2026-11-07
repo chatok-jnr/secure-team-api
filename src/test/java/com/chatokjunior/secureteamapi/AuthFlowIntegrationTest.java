@@ -1,5 +1,6 @@
 package com.chatokjunior.secureteamapi;
 
+import com.chatokjunior.secureteamapi.config.TestcontainersConfig;
 import com.chatokjunior.secureteamapi.user.entity.Role;
 import com.chatokjunior.secureteamapi.user.entity.User;
 import com.chatokjunior.secureteamapi.user.repository.UserRepository;

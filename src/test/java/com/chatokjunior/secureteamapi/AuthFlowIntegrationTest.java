@@ -137,7 +137,24 @@ public class AuthFlowIntegrationTest {
         mockMvc.perform(post("/api/auth/login")
                 .content(body)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.email").value("must be a well-formed email address"));
     }
 
+    @Test
+    void login_withInvalidPassword_return400() throws Exception {
+        createUser("chatok@test.com", Role.EMPLOYEE);
+
+        String body = """
+                {
+                    "email":"chatok@test.com",
+                    "password":"pass"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 }

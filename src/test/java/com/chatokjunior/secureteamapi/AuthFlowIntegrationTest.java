@@ -122,4 +122,22 @@ public class AuthFlowIntegrationTest {
                 .cookie(cookies))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void login_withInvalidEmail_return400() throws Exception{
+        createUser("chatok@test.com", Role.EMPLOYEE);
+
+        String body = """
+                {
+                    "email":"chatokTeste.com",
+                    "password":"Password123"
+                }
+                """;
+
+        mockMvc.perform(post("/api/auth/login")
+                .content(body)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
 }

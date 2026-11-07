@@ -95,4 +95,10 @@ public class AuthFlowIntegrationTest {
                 .andExpect(jsonPath("$.role").value("EMPLOYEE"))
                 .andExpect(jsonPath("$.fullName").value("Test User"));
     }
+
+    @Test
+    void me_whenNoCookies_returnsUnauthorized() throws Exception{
+        mockMvc.perform(get("/api/users/me"))
+                .andExpect(status().isUnauthorized());
+    }
 }

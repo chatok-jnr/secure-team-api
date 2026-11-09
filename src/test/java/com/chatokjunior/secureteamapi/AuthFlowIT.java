@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(TestcontainersConfig.class)
 @Transactional
-public class AuthFlowIntegrationTest {
+public class AuthFlowIT {
     @Autowired
     private MockMvc mockMvc;
 

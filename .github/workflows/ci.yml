@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -5,9 +6,19 @@ on:
     branches: [main]
   pull_request:
 
+# Cancel older runs on the same branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Default permissions
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -20,8 +31,8 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Run tests
-        run: mvn -B test
+      - name: Build and run all tests
+        run: mvn -B verify
         env:
           DB_URL: jdbc:postgresql://localhost:5432/unused
           DB_USERNAME: unused
@@ -36,5 +47,40 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-reports
-          path: target/surefire-reports
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+
+  docker:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}

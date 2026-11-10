@@ -1,5 +1,7 @@
 # SecureTeamAPI
 
+![CI](https://github.com/chatok-jnr/secure-team-api/actions/workflows/ci.yml/badge.svg)
+
 A team and project management REST API built with **Spring Boot** and **Spring Security**.
 
 > 🎯 **Main goal of this project: to learn and practice Spring Security in depth.**
@@ -50,7 +52,7 @@ Think of it as a small backend for a company where **who you are decides what yo
 - **Object-level authorization**: a manager can only edit *their own* project, an employee can only see projects they belong to
 
 ### Hardening
-- **CSRF protection**
+- **CSRF mitigation**: the API is stateless and its auth cookies use `SameSite=Strict`, so Spring's CSRF filter is disabled
 - **CORS** configured for credentialed requests
 - **Cookie hardening**: `HttpOnly`, `Secure`, `SameSite`
 - **Account locking** after repeated failed logins
@@ -61,13 +63,15 @@ Think of it as a small backend for a company where **who you are decides what yo
 
 ## Tech stack
 
-- Java + Spring Boot
-- Spring Security
-- Spring Data JPA
-- PostgreSQL
+- Java 25 + Spring Boot 4
+- Spring Security 7
+- Spring Data JPA + PostgreSQL
 - JWT
 - Email (OTP and notification emails)
 - REST API
+- **Testing:** JUnit 5, Mockito, MockMvc, Testcontainers, JaCoCo
+- **DevOps:** Docker, GitHub Actions, GitHub Container Registry, Railway, Dependabot
+- Spring Boot Actuator (health endpoint)
 
 ---
 
@@ -92,7 +96,7 @@ Think of it as a small backend for a company where **who you are decides what yo
 | Method | Endpoint | Access |
 |--------|----------|--------|
 | GET | `/api/users/me` | Authenticated |
-| PATCH | `/api/users/me/password` | Authenticated |
+| PATCH | `/api/users/password` | Authenticated |
 | GET | `/api/users` | ADMIN |
 | GET | `/api/users/{id}` | ADMIN, or the user themself |
 | POST | `/api/users` | ADMIN |
@@ -117,6 +121,11 @@ Think of it as a small backend for a company where **who you are decides what yo
 | GET | `/api/manager/dashboard` | MANAGER |
 | GET | `/api/admin/dashboard` | ADMIN |
 
+### Health
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/actuator/health` | Public |
+
 ### Audit logs *(coming soon)*
 | Method | Endpoint | Access |
 |--------|----------|--------|
@@ -140,6 +149,61 @@ POST /api/auth/verify-email/resend?email=user@example.com
   -> rejected if already verified or an active OTP exists
   -> otherwise a new OTP is generated and emailed
 ```
+
+---
+
+## Testing
+
+The project has **65+ automated tests** across four layers. Each layer checks something the others can't.
+
+| Layer | Tools | What it checks |
+|-------|-------|----------------|
+| **Service** (unit) | JUnit 5, Mockito | Business logic and every branch of `UserService`, with dependencies mocked |
+| **Controller** (slice) | `@WebMvcTest`, MockMvc | Status codes, JSON, request validation, error format, and role rules (401 / 403) |
+| **Repository** (slice) | `@DataJpaTest`, Testcontainers | Custom JPQL queries, DTO projections, paging, and group-by counts against a real PostgreSQL |
+| **Integration** | `@SpringBootTest`, Testcontainers | Real login, JWT cookies, role-based access end to end, and the health endpoint |
+
+Repository and integration tests run against a **real PostgreSQL started in Docker by Testcontainers**, not an in-memory database, so queries behave as they do in production.
+
+**Current coverage:** the user management layer and the login flow. The auth service, admin, manager and project modules are next. JaCoCo generates a coverage report, and no minimum threshold is enforced yet.
+
+### Run the tests
+
+```bash
+# Docker must be running (Testcontainers starts PostgreSQL for you)
+mvn verify
+
+# Coverage report
+open target/site/jacoco/index.html
+```
+
+---
+
+## CI/CD pipeline
+
+Built with **GitHub Actions** (`.github/workflows/ci.yml`).
+
+```
+Pull request ──► test ──► branch protection blocks the merge if it fails
+
+Merge to main ─► test ──► docker ──► deploy
+                         build and    redeploy
+                         push image   on Railway
+```
+
+- **`test`**: runs `mvn verify` on a clean Ubuntu runner for every pull request and every push to `main`. It uses fake secrets, and the database comes from Testcontainers. Test and coverage reports are uploaded as artifacts.
+- **`docker`**: runs only on `main` and only if `test` passed. It builds the Docker image and pushes it to GitHub Container Registry with two tags: the commit SHA (for rollbacks) and `production` (the tag the host follows).
+- **`deploy`**: runs only if `docker` succeeded, and tells Railway to redeploy the service.
+
+If a test fails, nothing is built or deployed.
+
+Other safeguards:
+- **Branch protection** on `main`: a failing build can't be merged
+- **Dependabot** opens pull requests for outdated dependencies and actions, and the pipeline tests them like any other change
+- **Concurrency control** cancels outdated runs on the same branch
+- **Least-privilege permissions** and job timeouts
+
+Real secrets (database URL, JWT and OTP secrets, mail credentials) live only in the host's environment variables, never in the repository.
 
 ---
 
@@ -174,10 +238,12 @@ The build order, step by step:
 4. **User management** (admin): list, get, create, change role, disable
 5. **Projects and membership**: create, members, role-based project listing
 6. **Dashboards**: manager and admin
-7. **Authorization hardening**: method security, permissions, CSRF, CORS, cookie hardening
+7. **Authorization hardening**: method security, permissions, CSRF handling, CORS, cookie hardening
 8. **Advanced account security**: account locking, forgot/reset password, session management
 9. **Auditing**: audit logging and admin audit log
 10. **Email verification**: OTP generation, HMAC hashing, verify and resend flow
+11. **Testing**: unit, controller, repository and integration tests
+12. **CI/CD**: automated tests, Docker image, deployment to Railway
 
 ---
 
@@ -188,15 +254,30 @@ The build order, step by step:
 git clone https://github.com/chatok-jnr/secure-team-api.git
 cd secure-team-api
 
-# 2. Configure your database, JWT secret, OTP secret and mail settings in
-#    src/main/resources/application.properties
-#    (load secrets from environment variables, never commit them)
+# 2. Create a .env file in the project root (it is gitignored)
+#    DB_URL=jdbc:postgresql://localhost:5432/secure_team
+#    DB_USERNAME=...
+#    DB_PASSWORD=...
+#    JWT_SECRET=...        (long random string)
+#    OTP_SECRET=...        (long random string)
+#    MAIL_USERNAME=...
+#    MAIL_PASSWORD=...
+#    MAIL_FROM=...
+#    Never commit secrets.
 
 # 3. Run the app
 ./mvnw spring-boot:run
 ```
 
-The API will start on `http://localhost:8080`.
+The API will start on `http://localhost:8080`. Check it with `GET /actuator/health`.
+
+### Run with Docker
+
+```bash
+docker pull ghcr.io/chatok-jnr/secure-team-api:production
+```
+
+Pass the same variables as environment variables when you run the container.
 
 ---
 
@@ -209,6 +290,19 @@ The API will start on `http://localhost:8080`.
 - Defending against CSRF, misconfigured CORS, and insecure cookies
 - Building account protections: locking, session revocation, password reset
 - Email verification with OTPs: why a short code needs a keyed hash (HMAC) instead of plain SHA-256, and why `SecureRandom` and constant-time comparison matter
+- The testing pyramid in Spring Boot: when to use a Mockito unit test, a slice test, or a full integration test
+- Why Testcontainers beats an in-memory database for testing real queries
+- How a CI/CD pipeline works end to end: tests, Docker image, registry, deployment, and why each job depends on the previous one
+- Debugging problems that only appear on a clean machine, such as a mail health check failing in CI because of fake credentials
+- Branch protection, Dependabot and JaCoCo coverage reports
+
+---
+
+## What's next
+
+- Tests for the auth, admin, manager and project modules, then a minimum coverage threshold
+- A post-deploy health check gate
+- Database migrations with Flyway instead of `ddl-auto: update`
 
 ---
 

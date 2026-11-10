@@ -9,9 +9,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "management.endpoint.health.show-details=always")
 @AutoConfigureMockMvc
 @Import(TestcontainersConfig.class)
 public class ActuatorIT {
@@ -21,6 +23,7 @@ public class ActuatorIT {
     @Test
     void health_whenAppIsRunning_returnsUp() throws Exception {
         mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"));
     }
 }

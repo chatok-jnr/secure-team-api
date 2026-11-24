@@ -6,6 +6,7 @@ import com.chatokjunior.secureteamapi.otp.entity.OtpType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
